@@ -5,6 +5,7 @@ import bookingservice.dto.BookingResponse;
 import bookingservice.entity.Booking;
 import bookingservice.repository.BookingRepository;
 import bookingservice.service.BookingService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,7 +28,7 @@ public class BookingServiceImpl implements BookingService {
                                  , booking.getRoomId()
                                  , booking.getCheckInAt()
                                  , booking.getCheckOutAt()
-                                 , booking.getIsConfirmed());
+                                 , booking.getConfirmed());
     }
 
     @Override
@@ -38,7 +39,7 @@ public class BookingServiceImpl implements BookingService {
                                                     , b.getRoomId()
                                                     , b.getCheckInAt()
                                                     , b.getCheckOutAt()
-                                                    , b.getIsConfirmed()))
+                                                    , b.getConfirmed()))
                 .collect(Collectors.toList());
     }
 
