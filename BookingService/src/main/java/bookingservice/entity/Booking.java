@@ -14,6 +14,10 @@ public class Booking {
     private LocalDateTime checkInAt;
     private LocalDateTime checkOutAt;
     private Boolean isConfirmed = false;
+
+    @Enumerated(EnumType.STRING)
+    private BookingStatus status = BookingStatus.ACTIVE;
+
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
@@ -22,60 +26,68 @@ public class Booking {
         return id;
     }
 
-    public Long getUserId() {
-        return userId;
-    }
-
-    public Long getRoomId() {
-        return roomId;
-    }
-
-    public LocalDateTime getCheckInAt() {
-        return checkInAt;
-    }
-
-    public LocalDateTime getCheckOutAt() {
-        return checkOutAt;
-    }
-
-    public Boolean getConfirmed() {
-        return isConfirmed;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getUserId() {
+        return userId;
     }
 
     public void setUserId(Long userId) {
         this.userId = userId;
     }
 
+    public Long getRoomId() {
+        return roomId;
+    }
+
     public void setRoomId(Long roomId) {
         this.roomId = roomId;
+    }
+
+    public LocalDateTime getCheckInAt() {
+        return checkInAt;
     }
 
     public void setCheckInAt(LocalDateTime checkInAt) {
         this.checkInAt = checkInAt;
     }
 
+    public LocalDateTime getCheckOutAt() {
+        return checkOutAt;
+    }
+
     public void setCheckOutAt(LocalDateTime checkOutAt) {
         this.checkOutAt = checkOutAt;
+    }
+
+    public Boolean getConfirmed() {
+        return isConfirmed;
     }
 
     public void setConfirmed(Boolean confirmed) {
         isConfirmed = confirmed;
     }
 
+    public BookingStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(BookingStatus status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
     public void setUpdatedAt(LocalDateTime updatedAt) {

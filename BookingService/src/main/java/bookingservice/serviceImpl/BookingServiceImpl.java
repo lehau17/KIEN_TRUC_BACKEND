@@ -5,8 +5,8 @@ import bookingservice.dto.BookingResponse;
 import bookingservice.entity.Booking;
 import bookingservice.repository.BookingRepository;
 import bookingservice.service.BookingService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,28 +23,30 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponse createBooking(BookingRequest request) {
         Booking booking = new Booking(request.getUserId(), request.getRoomId(), request.getCheckInAt(), request.getCheckOutAt());
         bookingRepository.save(booking);
-        return new BookingResponse(booking.getId()
-                                 , booking.getUserId()
-                                 , booking.getRoomId()
-                                 , booking.getCheckInAt()
-                                 , booking.getCheckOutAt()
-                                 , booking.getConfirmed());
+        return new BookingResponse(booking.getId(), booking.getUserId(), booking.getRoomId(), booking.getCheckInAt(), booking.getCheckOutAt(), booking.getConfirmed(), booking.getCreatedAt(), booking.getUpdatedAt());
     }
 
     @Override
     public List<BookingResponse> getAllBookings() {
         return bookingRepository.findAll().stream()
-                .map(b -> new BookingResponse(b.getId()
-                                                    , b.getUserId()
-                                                    , b.getRoomId()
-                                                    , b.getCheckInAt()
-                                                    , b.getCheckOutAt()
-                                                    , b.getConfirmed()))
+                .map(b -> new BookingResponse(b.getId(), b.getUserId(), b.getRoomId(), b.getCheckInAt(), b.getCheckOutAt(), b.getConfirmed(), b.getCreatedAt(), b.getUpdatedAt()))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void deleteBooking(Long id) {
+    public void confirmBooking(Long id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+        booking.setConfirmed(true);
+        booking.setUpdatedAt(LocalDateTime.now());
+        bookingRepository.save(booking);
+    }
+
+    @Override
+    public void cancelBooking(Long id) {
+        if (!bookingRepository.existsById(id)) {
+            throw new RuntimeException("Booking not found");
+        }
         bookingRepository.deleteById(id);
     }
 }

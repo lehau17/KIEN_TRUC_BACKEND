@@ -4,7 +4,6 @@ import bookingservice.dto.BookingRequest;
 import bookingservice.dto.BookingResponse;
 import bookingservice.service.BookingService;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -27,8 +26,13 @@ public class BookingController {
         return bookingService.getAllBookings();
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteBooking(@PathVariable Long id) {
-        bookingService.deleteBooking(id);
+    @PutMapping("/{id}/confirm")
+    public void confirmBooking(@PathVariable Long id) {
+        bookingService.confirmBooking(id);
+    }
+
+    @DeleteMapping("/{id}/cancel")
+    public void cancelBooking(@PathVariable Long id) {
+        bookingService.cancelBooking(id);
     }
 }

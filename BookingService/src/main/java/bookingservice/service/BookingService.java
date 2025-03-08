@@ -9,5 +9,7 @@ public interface BookingService {
 
     List<BookingResponse> getAllBookings();
 
-    void deleteBooking(Long id);
+    void confirmBooking(Long id);
+
+    void cancelBooking(Long id);
 }
