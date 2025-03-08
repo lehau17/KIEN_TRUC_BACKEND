@@ -9,6 +9,19 @@ public class BookingResponse {
     private LocalDateTime checkInAt;
     private LocalDateTime checkOutAt;
     private Boolean isConfirmed;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    public BookingResponse(Long id, Long userId, Long roomId, LocalDateTime checkInAt, LocalDateTime checkOutAt, Boolean isConfirmed, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.id = id;
+        this.userId = userId;
+        this.roomId = roomId;
+        this.checkInAt = checkInAt;
+        this.checkOutAt = checkOutAt;
+        this.isConfirmed = isConfirmed;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 
     public Long getId() {
         return id;
@@ -34,36 +47,11 @@ public class BookingResponse {
         return isConfirmed;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public void setRoomId(Long roomId) {
-        this.roomId = roomId;
-    }
-
-    public void setCheckInAt(LocalDateTime checkInAt) {
-        this.checkInAt = checkInAt;
-    }
-
-    public void setCheckOutAt(LocalDateTime checkOutAt) {
-        this.checkOutAt = checkOutAt;
-    }
-
-    public void setConfirmed(Boolean confirmed) {
-        isConfirmed = confirmed;
-    }
-
-    public BookingResponse(Long id, Long userId, Long roomId, LocalDateTime checkInAt, LocalDateTime checkOutAt, Boolean isConfirmed) {
-        this.id = id;
-        this.userId = userId;
-        this.roomId = roomId;
-        this.checkInAt = checkInAt;
-        this.checkOutAt = checkOutAt;
-        this.isConfirmed = isConfirmed;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }
