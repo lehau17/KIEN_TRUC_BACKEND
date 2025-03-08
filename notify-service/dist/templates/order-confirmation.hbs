@@ -1,0 +1,76 @@
+<html>
+  <head>
+    <style>
+      body { font-family: Arial, sans-serif; background-color: #f7f7f7; margin:
+      0; padding: 0; } .email-container { max-width: 600px; margin: 20px auto;
+      background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.1); } .header { text-align: center; padding:
+      20px 0; border-bottom: 2px solid #4CAF50; } .header h1 { color: #4CAF50; }
+      .content { padding: 20px 0; line-height: 1.6; } .order-details {
+      margin-top: 20px; border-top: 1px solid #ddd; padding-top: 20px; } .footer
+      { margin-top: 20px; font-size: 0.9em; color: #888; text-align: center; }
+      .button { display: inline-block; padding: 10px 20px; background-color:
+      #4CAF50; color: #ffffff; text-decoration: none; border-radius: 5px;
+      margin: 20px 0; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <div class='email-container'>
+      <div class='header'>
+        <h1>Order Confirmation</h1>
+      </div>
+      <div class='content'>
+        <p>Hi {{customerName}},</p>
+        <p>Thank you for your order! Your order has been successfully placed and
+          is being processed.</p>
+        <div class='order-details'>
+          <h3>Order Details</h3>
+          <p><strong>Order ID:</strong> {{orderId}}</p>
+          <p><strong>Date:</strong> {{orderDate}}</p>
+          <p><strong>Total:</strong> ${{orderTotal}}</p>
+          <table
+            style='width: 100%; border-collapse: collapse; margin-top: 10px;'
+          >
+            <thead>
+              <tr>
+                <th
+                  style='text-align: left; border-bottom: 1px solid #ddd; padding: 8px;'
+                >Product</th>
+                <th
+                  style='text-align: left; border-bottom: 1px solid #ddd; padding: 8px;'
+                >Quantity</th>
+                <th
+                  style='text-align: left; border-bottom: 1px solid #ddd; padding: 8px;'
+                >Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each orderItems}}
+                <tr>
+                  <td
+                    style='padding: 8px; border-bottom: 1px solid #ddd;'
+                  >{{name}}</td>
+                  <td
+                    style='padding: 8px; border-bottom: 1px solid #ddd;'
+                  >{{quantity}}</td>
+                  <td
+                    style='padding: 8px; border-bottom: 1px solid #ddd;'
+                  >${{price}}</td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+        <p>If you have any questions or concerns, feel free to
+          <a href='{{supportUrl}}'>contact us</a>.</p>
+        <p class='button'>
+          <a href='{{orderDetailsUrl}}' style='color: white;'>View Your Order</a>
+        </p>
+      </div>
+      <div class='footer'>
+        <p>Thank you for shopping with us!</p>
+        <p>&copy; {{year}} Your Company. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+</html>
