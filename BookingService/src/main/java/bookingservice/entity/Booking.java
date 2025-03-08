@@ -13,7 +13,6 @@ public class Booking {
     private Long roomId;
     private LocalDateTime checkInAt;
     private LocalDateTime checkOutAt;
-    private Boolean isConfirmed = false;
 
     @Enumerated(EnumType.STRING)
     private BookingStatus status = BookingStatus.ACTIVE;
@@ -62,14 +61,6 @@ public class Booking {
         this.checkOutAt = checkOutAt;
     }
 
-    public Boolean getConfirmed() {
-        return isConfirmed;
-    }
-
-    public void setConfirmed(Boolean confirmed) {
-        isConfirmed = confirmed;
-    }
-
     public BookingStatus getStatus() {
         return status;
     }
@@ -101,7 +92,6 @@ public class Booking {
         this.roomId = roomId;
         this.checkInAt = checkInAt;
         this.checkOutAt = checkOutAt;
-        this.isConfirmed = false;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -114,7 +104,6 @@ public class Booking {
                 ", roomId=" + roomId +
                 ", checkInAt=" + checkInAt +
                 ", checkOutAt=" + checkOutAt +
-                ", isConfirmed=" + isConfirmed +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';

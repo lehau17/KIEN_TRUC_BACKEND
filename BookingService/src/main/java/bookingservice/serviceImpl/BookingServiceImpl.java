@@ -3,6 +3,7 @@ package bookingservice.serviceImpl;
 import bookingservice.dto.BookingRequest;
 import bookingservice.dto.BookingResponse;
 import bookingservice.entity.Booking;
+import bookingservice.entity.BookingStatus;
 import bookingservice.repository.BookingRepository;
 import bookingservice.service.BookingService;
 import org.springframework.stereotype.Service;
@@ -23,13 +24,18 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponse createBooking(BookingRequest request) {
         Booking booking = new Booking(request.getUserId(), request.getRoomId(), request.getCheckInAt(), request.getCheckOutAt());
         bookingRepository.save(booking);
-        return new BookingResponse(booking.getId(), booking.getUserId(), booking.getRoomId(), booking.getCheckInAt(), booking.getCheckOutAt(), booking.getConfirmed(), booking.getCreatedAt(), booking.getUpdatedAt());
+        return new BookingResponse(
+                booking.getId(), booking.getUserId(), booking.getRoomId(),
+                booking.getCheckInAt(), booking.getCheckOutAt(), booking.getStatus());
     }
 
     @Override
     public List<BookingResponse> getAllBookings() {
         return bookingRepository.findAll().stream()
-                .map(b -> new BookingResponse(b.getId(), b.getUserId(), b.getRoomId(), b.getCheckInAt(), b.getCheckOutAt(), b.getConfirmed(), b.getCreatedAt(), b.getUpdatedAt()))
+                .filter(b -> b.getStatus() != BookingStatus.CANCELED)
+                .map(b -> new BookingResponse(
+                        b.getId(), b.getUserId(), b.getRoomId(),
+                        b.getCheckInAt(), b.getCheckOutAt(), b.getStatus()))
                 .collect(Collectors.toList());
     }
 
@@ -37,16 +43,17 @@ public class BookingServiceImpl implements BookingService {
     public void confirmBooking(Long id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
-        booking.setConfirmed(true);
+        booking.setStatus(BookingStatus.CONFIRMED);
         booking.setUpdatedAt(LocalDateTime.now());
         bookingRepository.save(booking);
     }
 
     @Override
     public void cancelBooking(Long id) {
-        if (!bookingRepository.existsById(id)) {
-            throw new RuntimeException("Booking not found");
-        }
-        bookingRepository.deleteById(id);
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+        booking.setStatus(BookingStatus.CANCELED);
+        booking.setUpdatedAt(LocalDateTime.now());
+        bookingRepository.save(booking);
     }
 }
