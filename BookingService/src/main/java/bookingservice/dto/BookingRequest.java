@@ -3,16 +3,25 @@ package bookingservice.dto;
 import java.time.LocalDateTime;
 
 public class BookingRequest {
-    private Long userId;
-    private Long roomId;
+    private String userId;
+    private String roomId;
     private LocalDateTime checkInAt;
     private LocalDateTime checkOutAt;
 
-    public Long getUserId() {
+    public BookingRequest() {}
+
+    public BookingRequest(String userId, String roomId, LocalDateTime checkInAt, LocalDateTime checkOutAt) {
+        this.userId = userId;
+        this.roomId = roomId;
+        this.checkInAt = checkInAt;
+        this.checkOutAt = checkOutAt;
+    }
+
+    public String getUserId() {
         return userId;
     }
 
-    public Long getRoomId() {
+    public String getRoomId() {
         return roomId;
     }
 
@@ -24,11 +33,11 @@ public class BookingRequest {
         return checkOutAt;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
-    public void setRoomId(Long roomId) {
+    public void setRoomId(String roomId) {
         this.roomId = roomId;
     }
 

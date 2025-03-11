@@ -27,12 +27,22 @@ public class BookingController {
     }
 
     @PutMapping("/{id}/confirm")
-    public void confirmBooking(@PathVariable Long id) {
+    public void confirmBooking(@PathVariable String id) {
         bookingService.confirmBooking(id);
     }
 
-    @DeleteMapping("/{id}/cancel")
-    public void cancelBooking(@PathVariable Long id) {
+    @PutMapping("/{id}/cancel")
+    public void cancelBooking(@PathVariable String id) {
         bookingService.cancelBooking(id);
+    }
+
+    @PutMapping("/{id}/checkin")
+    public void checkInBooking(@PathVariable String id) {
+        bookingService.checkInBooking(id);
+    }
+
+    @PutMapping("/{id}/checkout")
+    public void checkOutBooking(@PathVariable String id) {
+        bookingService.checkOutBooking(id);
     }
 }

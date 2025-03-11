@@ -1,17 +1,20 @@
 package bookingservice.dto;
 
-import bookingservice.entity.BookingStatus;
+import bookingservice.enums.BookingStatus;
+
 import java.time.LocalDateTime;
 
 public class BookingResponse {
-    private Long id;
-    private Long userId;
-    private Long roomId;
+    private String id;
+    private String userId;
+    private String roomId;
     private LocalDateTime checkInAt;
     private LocalDateTime checkOutAt;
     private BookingStatus status;
 
-    public BookingResponse(Long id, Long userId, Long roomId, LocalDateTime checkInAt, LocalDateTime checkOutAt, BookingStatus status) {
+    public BookingResponse() {}
+
+    public BookingResponse(String id, String userId, String roomId, LocalDateTime checkInAt, LocalDateTime checkOutAt, BookingStatus status) {
         this.id = id;
         this.userId = userId;
         this.roomId = roomId;
@@ -20,27 +23,27 @@ public class BookingResponse {
         this.status = status;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
-    public Long getRoomId() {
+    public String getRoomId() {
         return roomId;
     }
 
-    public void setRoomId(Long roomId) {
+    public void setRoomId(String roomId) {
         this.roomId = roomId;
     }
 

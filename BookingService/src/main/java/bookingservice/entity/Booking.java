@@ -1,47 +1,63 @@
 package bookingservice.entity;
 
-import jakarta.persistence.*;
+import bookingservice.enums.BookingStatus;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "bookings")
+@Document(collection = "bookings")
 public class Booking {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private Long userId;
-    private Long roomId;
+    private String id;
+    private String userId;
+    private String roomId;
     private LocalDateTime checkInAt;
     private LocalDateTime checkOutAt;
+    private BookingStatus status;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    @Enumerated(EnumType.STRING)
-    private BookingStatus status = BookingStatus.ACTIVE;
+    public Booking(String userId, String roomId, LocalDateTime checkInAt, LocalDateTime checkOutAt) {
+        this.userId = userId;
+        this.roomId = roomId;
+        this.checkInAt = checkInAt;
+        this.checkOutAt = checkOutAt;
+        this.status = BookingStatus.PENDING_PAYMENT;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
 
-    @Column(updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    public void confirmBooking() {
+        this.status = BookingStatus.CONFIRMED;
+        this.updatedAt = LocalDateTime.now();
+    }
 
-    public Long getId() {
+    public void cancelBooking() {
+        this.status = BookingStatus.CANCELED;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
-    public Long getRoomId() {
+    public String getRoomId() {
         return roomId;
     }
 
-    public void setRoomId(Long roomId) {
+    public void setRoomId(String roomId) {
         this.roomId = roomId;
     }
 
@@ -85,25 +101,15 @@ public class Booking {
         this.updatedAt = updatedAt;
     }
 
-    public Booking() {}
-
-    public Booking(Long userId, Long roomId, LocalDateTime checkInAt, LocalDateTime checkOutAt) {
-        this.userId = userId;
-        this.roomId = roomId;
-        this.checkInAt = checkInAt;
-        this.checkOutAt = checkOutAt;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
     @Override
     public String toString() {
         return "Booking{" +
-                "id=" + id +
-                ", userId=" + userId +
-                ", roomId=" + roomId +
+                "id='" + id + '\'' +
+                ", userId='" + userId + '\'' +
+                ", roomId='" + roomId + '\'' +
                 ", checkInAt=" + checkInAt +
                 ", checkOutAt=" + checkOutAt +
+                ", status=" + status +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
