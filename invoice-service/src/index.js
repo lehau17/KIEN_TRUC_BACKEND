@@ -28,7 +28,7 @@ const startServer = async () => {
         console.error("Lỗi khi tạo hóa đơn:", error);
     }
 
-    const PORT = process.env.PORT || 5002;
+    const PORT = process.env.PORT || 5003;
     app.listen(PORT, () => console.log(`Invoice Service running on port ${PORT}`));
 };
 

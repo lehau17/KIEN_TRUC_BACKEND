@@ -1,4 +1,5 @@
 const amqp = require('amqplib');
+require('dotenv').config()
 const { processBookingPayment } = require('../services/invoiceService');
 
 const listenToBookingEvents = async () => {

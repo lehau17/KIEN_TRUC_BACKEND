@@ -1,8 +1,9 @@
 const amqp = require('amqplib');
-
+require('dotenv').config()
 const sendBookingEvent = async () => {
     try {
-        const connection = await amqp.connect('amqp://localhost');
+        console.log("RabbitMQ URL:", process.env.RABBITMQ_URL);
+        const connection = await amqp.connect(process.env.RABBITMQ_URL);
         const channel = await connection.createChannel();
         const queue = 'booking_queue';
 
