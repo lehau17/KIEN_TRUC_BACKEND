@@ -21,18 +21,23 @@ public class BookingController {
     }
 
     @PostMapping
-    public BookingResponse createBooking(@RequestBody BookingRequest request) {
-        return bookingService.createBooking(request);
+    public ResponseEntity<?> createBooking(@RequestBody BookingRequest request) {
+        try {
+            BookingResponse response = bookingService.createBooking(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error creating booking: " + e.getMessage());
+        }
     }
 
     @GetMapping
-    public List<BookingResponse> getAllBookings() {
-        return bookingService.getAllBookings();
+    public ResponseEntity<List<BookingResponse>> getAllBookings() {
+        return ResponseEntity.ok(bookingService.getAllBookings());
     }
 
     @GetMapping("/paged")
-    public Page<BookingResponse> getAllBookingsPaged(Pageable pageable) {
-        return bookingService.getAllBookingsPaged(pageable);
+    public ResponseEntity<Page<BookingResponse>> getAllBookingsPaged(Pageable pageable) {
+        return ResponseEntity.ok(bookingService.getAllBookingsPaged(pageable));
     }
 
     @PutMapping("/{id}/confirm")

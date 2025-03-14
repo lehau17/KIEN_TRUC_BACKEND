@@ -10,9 +10,9 @@ import java.util.List;
 public interface BookingService {
     BookingResponse createBooking(BookingRequest request);
 
-    List<BookingResponse> getAllBookings(); // Giữ nguyên
+    List<BookingResponse> getAllBookings();
 
-    Page<BookingResponse> getAllBookingsPaged(Pageable pageable); // Phương thức mới
+    Page<BookingResponse> getAllBookingsPaged(Pageable pageable);
 
     boolean confirmBooking(String id);
 

@@ -1,11 +1,13 @@
 package bookingservice.serviceImpl;
 
+import bookingservice.dto.BookingMessage;
 import bookingservice.dto.BookingRequest;
 import bookingservice.dto.BookingResponse;
 import bookingservice.entity.Booking;
 import bookingservice.enums.BookingStatus;
 import bookingservice.repository.BookingRepository;
 import bookingservice.service.BookingService;
+import bookingservice.service.RabbitMQProducer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -20,9 +22,11 @@ import java.util.stream.Collectors;
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
+    private final RabbitMQProducer rabbitMQProducer;
 
-    public BookingServiceImpl(BookingRepository bookingRepository) {
+    public BookingServiceImpl(BookingRepository bookingRepository, RabbitMQProducer rabbitMQProducer) {
         this.bookingRepository = bookingRepository;
+        this.rabbitMQProducer = rabbitMQProducer;
     }
 
     @Override
@@ -34,6 +38,13 @@ public class BookingServiceImpl implements BookingService {
                 request.getCheckOutAt()
         );
         bookingRepository.save(booking);
+
+        BookingMessage message = new BookingMessage(
+                booking.getId(), booking.getUserId(), booking.getRoomId(),
+                booking.getCheckInAt(), booking.getCheckOutAt(), booking.getStatus().name()
+        );
+        rabbitMQProducer.sendMessage("BOOKING", message);
+
         return new BookingResponse(
                 booking.getId(),
                 booking.getUserId(),
@@ -69,29 +80,29 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public boolean confirmBooking(String id) {
-        return updateBookingStatus(id, BookingStatus.PENDING_PAYMENT, BookingStatus.CONFIRMED);
+        return updateAndSendMessage(id, BookingStatus.PENDING_PAYMENT, BookingStatus.CONFIRMED, "CONFIRM");
     }
 
     @Override
     public boolean cancelBooking(String id) {
-        return updateBookingStatus(id, BookingStatus.PENDING_PAYMENT, BookingStatus.CANCELED);
+        return updateAndSendMessage(id, BookingStatus.PENDING_PAYMENT, BookingStatus.CANCELED, "CANCEL");
     }
 
     @Override
     public boolean checkInBooking(String id) {
-        return updateBookingStatus(id, BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN);
+        return updateAndSendMessage(id, BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN, "CHECKIN");
     }
 
     @Override
     public boolean checkOutBooking(String id) {
-        return updateBookingStatus(id, BookingStatus.CHECKED_IN, BookingStatus.CHECKED_OUT);
+        return updateAndSendMessage(id, BookingStatus.CHECKED_IN, BookingStatus.CHECKED_OUT, "CHECKOUT");
     }
 
-    private boolean updateBookingStatus(String id, BookingStatus requiredStatus, BookingStatus newStatus) {
+    private boolean updateAndSendMessage(String id, BookingStatus requiredStatus, BookingStatus newStatus, String action) {
         Optional<Booking> bookingOpt = bookingRepository.findById(id);
 
         if (bookingOpt.isEmpty()) {
-            throw new RuntimeException("Booking not found");
+            throw new RuntimeException("Booking không tồn tại");
         }
 
         Booking booking = bookingOpt.get();
@@ -103,6 +114,13 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(newStatus);
         booking.setUpdatedAt(LocalDateTime.now());
         bookingRepository.save(booking);
+
+        BookingMessage message = new BookingMessage(
+                booking.getId(), booking.getUserId(), booking.getRoomId(),
+                booking.getCheckInAt(), booking.getCheckOutAt(), booking.getStatus().name()
+        );
+
+        rabbitMQProducer.sendMessage(action, message);
         return true;
     }
 }
