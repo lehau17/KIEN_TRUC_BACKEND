@@ -3,7 +3,11 @@ package bookingservice.controller;
 import bookingservice.dto.BookingRequest;
 import bookingservice.dto.BookingResponse;
 import bookingservice.service.BookingService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -26,23 +30,36 @@ public class BookingController {
         return bookingService.getAllBookings();
     }
 
+    @GetMapping("/paged")
+    public Page<BookingResponse> getAllBookingsPaged(Pageable pageable) {
+        return bookingService.getAllBookingsPaged(pageable);
+    }
+
     @PutMapping("/{id}/confirm")
-    public void confirmBooking(@PathVariable String id) {
-        bookingService.confirmBooking(id);
+    public ResponseEntity<String> confirmBooking(@PathVariable String id) {
+        return bookingService.confirmBooking(id)
+                ? ResponseEntity.ok("Booking confirmed successfully.")
+                : ResponseEntity.badRequest().body("Cannot confirm booking. Current status is not PENDING_PAYMENT.");
     }
 
     @PutMapping("/{id}/cancel")
-    public void cancelBooking(@PathVariable String id) {
-        bookingService.cancelBooking(id);
+    public ResponseEntity<String> cancelBooking(@PathVariable String id) {
+        return bookingService.cancelBooking(id)
+                ? ResponseEntity.ok("Booking canceled successfully.")
+                : ResponseEntity.badRequest().body("Cannot cancel booking. Current status is not PENDING_PAYMENT.");
     }
 
     @PutMapping("/{id}/checkin")
-    public void checkInBooking(@PathVariable String id) {
-        bookingService.checkInBooking(id);
+    public ResponseEntity<String> checkInBooking(@PathVariable String id) {
+        return bookingService.checkInBooking(id)
+                ? ResponseEntity.ok("Checked in successfully.")
+                : ResponseEntity.badRequest().body("Cannot check in. Booking must be CONFIRMED.");
     }
 
     @PutMapping("/{id}/checkout")
-    public void checkOutBooking(@PathVariable String id) {
-        bookingService.checkOutBooking(id);
+    public ResponseEntity<String> checkOutBooking(@PathVariable String id) {
+        return bookingService.checkOutBooking(id)
+                ? ResponseEntity.ok("Checked out successfully.")
+                : ResponseEntity.badRequest().body("Cannot check out. Booking must be CHECKED_IN.");
     }
 }

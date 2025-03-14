@@ -6,11 +6,14 @@ import bookingservice.entity.Booking;
 import bookingservice.enums.BookingStatus;
 import bookingservice.repository.BookingRepository;
 import bookingservice.service.BookingService;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,61 +27,82 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponse createBooking(BookingRequest request) {
-        Booking booking = new Booking(request.getUserId(), request.getRoomId(), request.getCheckInAt(), request.getCheckOutAt());
+        Booking booking = new Booking(
+                request.getUserId(),
+                request.getRoomId(),
+                request.getCheckInAt(),
+                request.getCheckOutAt()
+        );
         bookingRepository.save(booking);
-        return new BookingResponse(booking.getId(), booking.getUserId(), booking.getRoomId(),
-                booking.getCheckInAt(), booking.getCheckOutAt(), booking.getStatus());
+        return new BookingResponse(
+                booking.getId(),
+                booking.getUserId(),
+                booking.getRoomId(),
+                booking.getCheckInAt(),
+                booking.getCheckOutAt(),
+                booking.getStatus()
+        );
     }
 
     @Override
     public List<BookingResponse> getAllBookings() {
         return bookingRepository.findAll().stream()
-                .map(b -> new BookingResponse(b.getId(), b.getUserId(), b.getRoomId(),
+                .map(b -> new BookingResponse(
+                        b.getId(), b.getUserId(), b.getRoomId(),
                         b.getCheckInAt(), b.getCheckOutAt(), b.getStatus()))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void confirmBooking(String id) {
-        Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
-        booking.setStatus(BookingStatus.CONFIRMED);
+    public Page<BookingResponse> getAllBookingsPaged(Pageable pageable) {
+        Page<Booking> bookingPage = bookingRepository.findAll(pageable);
+        return new PageImpl<>(
+                bookingPage.getContent().stream()
+                        .map(b -> new BookingResponse(
+                                b.getId(), b.getUserId(), b.getRoomId(),
+                                b.getCheckInAt(), b.getCheckOutAt(), b.getStatus()))
+                        .collect(Collectors.toList()),
+                pageable,
+                bookingPage.getTotalElements()
+        );
+    }
+
+    @Override
+    public boolean confirmBooking(String id) {
+        return updateBookingStatus(id, BookingStatus.PENDING_PAYMENT, BookingStatus.CONFIRMED);
+    }
+
+    @Override
+    public boolean cancelBooking(String id) {
+        return updateBookingStatus(id, BookingStatus.PENDING_PAYMENT, BookingStatus.CANCELED);
+    }
+
+    @Override
+    public boolean checkInBooking(String id) {
+        return updateBookingStatus(id, BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN);
+    }
+
+    @Override
+    public boolean checkOutBooking(String id) {
+        return updateBookingStatus(id, BookingStatus.CHECKED_IN, BookingStatus.CHECKED_OUT);
+    }
+
+    private boolean updateBookingStatus(String id, BookingStatus requiredStatus, BookingStatus newStatus) {
+        Optional<Booking> bookingOpt = bookingRepository.findById(id);
+
+        if (bookingOpt.isEmpty()) {
+            throw new RuntimeException("Booking not found");
+        }
+
+        Booking booking = bookingOpt.get();
+
+        if (booking.getStatus() != requiredStatus) {
+            return false;
+        }
+
+        booking.setStatus(newStatus);
         booking.setUpdatedAt(LocalDateTime.now());
         bookingRepository.save(booking);
-    }
-
-    @Override
-    public void cancelBooking(String id) {
-        Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
-        booking.setStatus(BookingStatus.CANCELED);
-        booking.setUpdatedAt(LocalDateTime.now());
-        bookingRepository.save(booking);
-    }
-
-    @Override
-    public void checkInBooking(String id) {
-        Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
-        if (booking.getStatus() == BookingStatus.CONFIRMED) {
-            booking.setStatus(BookingStatus.CHECKED_IN);
-            booking.setUpdatedAt(LocalDateTime.now());
-            bookingRepository.save(booking);
-        } else {
-            throw new RuntimeException("Cannot check-in. Booking is not confirmed.");
-        }
-    }
-
-    @Override
-    public void checkOutBooking(String id) {
-        Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
-        if (booking.getStatus() == BookingStatus.CHECKED_IN) {
-            booking.setStatus(BookingStatus.CHECKED_OUT);
-            booking.setUpdatedAt(LocalDateTime.now());
-            bookingRepository.save(booking);
-        } else {
-            throw new RuntimeException("Cannot check-out. Booking is not checked-in.");
-        }
+        return true;
     }
 }
