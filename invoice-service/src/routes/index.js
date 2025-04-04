@@ -1,13 +1,17 @@
-import express from "express";
-import authRouter from "./auth.router.js";
-import invoiceRoutes from "./invoiceRoutes.js";
+const express = require("express");
+
+const invoiceRoutes = require("./invoiceRoutes");
 
 const mainRouter = express.Router();
 
-// auth
-mainRouter.use("/auth", authRouter);
+mainRouter.use("/api/invoices", invoiceRoutes);
 
-// invoice
-mainRouter.use("/invoices", invoiceRoutes);
+module.exports = { mainRouter };
 
-export default mainRouter;
+
+
+
+
+
+
+
