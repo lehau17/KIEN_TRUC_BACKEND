@@ -1,9 +1,13 @@
 const { Room } = require("../model");
 
 class RoomRepository {
-  static async layDanhSachTatCaPhong(filters = {}) {
-    return await Room.find(filters);
-  }
+    static async layDanhSachTatCaPhong(filter = {}, sort = {}, skip = 0, limit = 10) {
+        return await Room.find(filter).sort(sort).skip(skip).limit(limit);
+      }
+
+    static async demSoLuong(filter = {}) {
+        return await Room.countDocuments(filter)
+    }
 
   static async layPhongTheoID(roomId) {
     return await Room.findById(roomId);
