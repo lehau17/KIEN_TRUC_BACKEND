@@ -26,7 +26,6 @@ class RoomController {
     }
 
 
-    asynce test
 
     // 📌 Cập nhật thông tin phòng
     static async capNhatPhong(req, res, next) {
