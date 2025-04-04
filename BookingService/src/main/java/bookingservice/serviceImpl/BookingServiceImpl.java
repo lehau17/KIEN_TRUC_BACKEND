@@ -160,8 +160,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public boolean isRoomBooked(String roomId, LocalDate checkInAt, LocalDate checkOutAt) {
-        List<Booking> confirmedBookings = bookingRepository.findByRoomIdAndStatusAndCheckInAt(
-                roomId, BookingStatus.CONFIRMED, checkOutAt, checkInAt);
-        return !confirmedBookings.isEmpty();
+        List<Booking> overlappingBookings = bookingRepository.findOverlappingBookings(
+                roomId, BookingStatus.CONFIRMED, checkInAt, checkOutAt);
+
+        return !overlappingBookings.isEmpty();
     }
 }

@@ -3,6 +3,7 @@ package bookingservice.entity;
 import bookingservice.enums.BookingStatus;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,7 +14,10 @@ public class Booking {
     private String id;
     private String userId;
     private String roomId;
+    @Field("checkInAt")
     private LocalDate checkInAt;
+
+    @Field("checkOutAt")
     private LocalDate checkOutAt;
     private BookingStatus status;
     private LocalDateTime createdAt;
