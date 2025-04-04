@@ -42,15 +42,25 @@ public class BookingServiceImpl implements BookingService {
                 request.getUserId(),
                 request.getRoomId(),
                 request.getCheckInAt(),
-                request.getCheckOutAt()
+                request.getCheckOutAt(),
+                request.getPrice()
         );
         bookingRepository.save(booking);
 
-        BookingMessage message = new BookingMessage(
-                booking.getId(), booking.getUserId(), booking.getRoomId(),
-                null, null, booking.getStatus().name()
-        );
-        rabbitMQProducer.sendMessage("BOOKING", message);
+        // Giả sử gọi PaymentService để thanh toán
+        boolean paymentSuccess = processPayment(booking.getId(), request.getPrice(), "CREDIT_CARD");
+        if (paymentSuccess) {
+            booking.confirmBooking();
+            bookingRepository.save(booking);
+
+            BookingMessage message = new BookingMessage(
+                    booking.getId(), booking.getUserId(), booking.getRoomId(),
+                    booking.getPrice(), "CREDIT_CARD", booking.getStatus().name()
+            );
+            rabbitMQProducer.sendMessage("CONFIRM", message);
+        } else {
+            throw new RuntimeException("Thanh toán thất bại");
+        }
 
         return new BookingResponse(
                 booking.getId(),
@@ -58,8 +68,15 @@ public class BookingServiceImpl implements BookingService {
                 booking.getRoomId(),
                 booking.getCheckInAt(),
                 booking.getCheckOutAt(),
-                booking.getStatus()
+                booking.getStatus(),
+                booking.getPrice()
         );
+    }
+
+    // Phương thức giả định để xử lý thanh toán
+    private boolean processPayment(String bookingId, Double amount, String paymentMethod) {
+        System.out.println("Processing payment for booking " + bookingId + " with amount " + amount);
+        return true;
     }
 
     private void validateBookingRequest(BookingRequest request) {
@@ -70,6 +87,9 @@ public class BookingServiceImpl implements BookingService {
         if (request.getCheckOutAt().isBefore(request.getCheckInAt()) || request.getCheckOutAt().isEqual(request.getCheckInAt())) {
             throw new IllegalArgumentException("Thời gian check-out phải sau check-in");
         }
+        if (request.getPrice() == null || request.getPrice() <= 0) {
+            throw new IllegalArgumentException("Giá phòng phải lớn hơn 0");
+        }
     }
 
     @Override
@@ -77,7 +97,7 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository.findAll().stream()
                 .map(b -> new BookingResponse(
                         b.getId(), b.getUserId(), b.getRoomId(),
-                        b.getCheckInAt(), b.getCheckOutAt(), b.getStatus()))
+                        b.getCheckInAt(), b.getCheckOutAt(), b.getStatus(), b.getPrice()))
                 .collect(Collectors.toList());
     }
 
@@ -88,7 +108,7 @@ public class BookingServiceImpl implements BookingService {
                 bookingPage.getContent().stream()
                         .map(b -> new BookingResponse(
                                 b.getId(), b.getUserId(), b.getRoomId(),
-                                b.getCheckInAt(), b.getCheckOutAt(), b.getStatus()))
+                                b.getCheckInAt(), b.getCheckOutAt(), b.getStatus(), b.getPrice()))
                         .collect(Collectors.toList()),
                 pageable,
                 bookingPage.getTotalElements()
@@ -134,7 +154,7 @@ public class BookingServiceImpl implements BookingService {
 
         BookingMessage message = new BookingMessage(
                 booking.getId(), booking.getUserId(), booking.getRoomId(),
-                null, null, booking.getStatus().name()
+                booking.getPrice(), "CREDIT_CARD", booking.getStatus().name()
         );
         rabbitMQProducer.sendMessage(action, message);
         return true;
@@ -154,7 +174,7 @@ public class BookingServiceImpl implements BookingService {
         return bookings.stream()
                 .map(b -> new BookingResponse(
                         b.getId(), b.getUserId(), b.getRoomId(),
-                        b.getCheckInAt(), b.getCheckOutAt(), b.getStatus()))
+                        b.getCheckInAt(), b.getCheckOutAt(), b.getStatus(), b.getPrice()))
                 .collect(Collectors.toList());
     }
 
@@ -162,7 +182,6 @@ public class BookingServiceImpl implements BookingService {
     public boolean isRoomBooked(String roomId, LocalDate checkInAt, LocalDate checkOutAt) {
         List<Booking> overlappingBookings = bookingRepository.findOverlappingBookings(
                 roomId, BookingStatus.CONFIRMED, checkInAt, checkOutAt);
-
         return !overlappingBookings.isEmpty();
     }
 }

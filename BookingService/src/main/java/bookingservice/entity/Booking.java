@@ -20,14 +20,16 @@ public class Booking {
     @Field("checkOutAt")
     private LocalDate checkOutAt;
     private BookingStatus status;
+    private Double price;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public Booking(String userId, String roomId, LocalDate checkInAt, LocalDate checkOutAt) {
+    public Booking(String userId, String roomId, LocalDate checkInAt, LocalDate checkOutAt, Double price) {
         this.userId = userId;
         this.roomId = roomId;
         this.checkInAt = checkInAt;
         this.checkOutAt = checkOutAt;
+        this.price = price;
         this.status = BookingStatus.PENDING_PAYMENT;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
@@ -43,7 +45,6 @@ public class Booking {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Getter và Setter
     public String getId() {
         return id;
     }
@@ -92,6 +93,14 @@ public class Booking {
         this.status = status;
     }
 
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -117,6 +126,7 @@ public class Booking {
                 ", checkInAt=" + checkInAt +
                 ", checkOutAt=" + checkOutAt +
                 ", status=" + status +
+                ", price=" + price +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
