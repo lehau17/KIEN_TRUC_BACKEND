@@ -3,6 +3,8 @@ package bookingservice.entity;
 import bookingservice.enums.BookingStatus;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Document(collection = "bookings")
@@ -11,13 +13,13 @@ public class Booking {
     private String id;
     private String userId;
     private String roomId;
-    private LocalDateTime checkInAt;
-    private LocalDateTime checkOutAt;
+    private LocalDate checkInAt;
+    private LocalDate checkOutAt;
     private BookingStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public Booking(String userId, String roomId, LocalDateTime checkInAt, LocalDateTime checkOutAt) {
+    public Booking(String userId, String roomId, LocalDate checkInAt, LocalDate checkOutAt) {
         this.userId = userId;
         this.roomId = roomId;
         this.checkInAt = checkInAt;
@@ -37,6 +39,7 @@ public class Booking {
         this.updatedAt = LocalDateTime.now();
     }
 
+    // Getter và Setter
     public String getId() {
         return id;
     }
@@ -61,19 +64,19 @@ public class Booking {
         this.roomId = roomId;
     }
 
-    public LocalDateTime getCheckInAt() {
+    public LocalDate getCheckInAt() {
         return checkInAt;
     }
 
-    public void setCheckInAt(LocalDateTime checkInAt) {
+    public void setCheckInAt(LocalDate checkInAt) {
         this.checkInAt = checkInAt;
     }
 
-    public LocalDateTime getCheckOutAt() {
+    public LocalDate getCheckOutAt() {
         return checkOutAt;
     }
 
-    public void setCheckOutAt(LocalDateTime checkOutAt) {
+    public void setCheckOutAt(LocalDate checkOutAt) {
         this.checkOutAt = checkOutAt;
     }
 

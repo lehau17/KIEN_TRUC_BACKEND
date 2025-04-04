@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +32,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponse createBooking(BookingRequest request) {
+        validateBookingRequest(request);
+
         Booking booking = new Booking(
                 request.getUserId(),
                 request.getRoomId(),
@@ -39,9 +42,10 @@ public class BookingServiceImpl implements BookingService {
         );
         bookingRepository.save(booking);
 
+
         BookingMessage message = new BookingMessage(
                 booking.getId(), booking.getUserId(), booking.getRoomId(),
-                booking.getCheckInAt(), booking.getCheckOutAt(), booking.getStatus().name()
+                null, null, booking.getStatus().name()
         );
         rabbitMQProducer.sendMessage("BOOKING", message);
 
@@ -53,6 +57,16 @@ public class BookingServiceImpl implements BookingService {
                 booking.getCheckOutAt(),
                 booking.getStatus()
         );
+    }
+
+    private void validateBookingRequest(BookingRequest request) {
+        LocalDate now = LocalDate.now();
+        if (request.getCheckInAt().isBefore(now)) {
+            throw new IllegalArgumentException("Thời gian check-in không được trong quá khứ");
+        }
+        if (request.getCheckOutAt().isBefore(request.getCheckInAt()) || request.getCheckOutAt().isEqual(request.getCheckInAt())) {
+            throw new IllegalArgumentException("Thời gian check-out phải sau check-in");
+        }
     }
 
     @Override
@@ -117,10 +131,27 @@ public class BookingServiceImpl implements BookingService {
 
         BookingMessage message = new BookingMessage(
                 booking.getId(), booking.getUserId(), booking.getRoomId(),
-                booking.getCheckInAt(), booking.getCheckOutAt(), booking.getStatus().name()
+                null, null, booking.getStatus().name()
         );
-
         rabbitMQProducer.sendMessage(action, message);
         return true;
+    }
+
+    @Override
+    public List<BookingResponse> getBookingsByDate(LocalDate date, String type) {
+        List<Booking> bookings;
+        if ("checkin".equalsIgnoreCase(type)) {
+            bookings = bookingRepository.findByCheckInAt(date);
+        } else if ("checkout".equalsIgnoreCase(type)) {
+            bookings = bookingRepository.findByCheckOutAt(date);
+        } else {
+            throw new IllegalArgumentException("Type phải là 'checkin' hoặc 'checkout'");
+        }
+
+        return bookings.stream()
+                .map(b -> new BookingResponse(
+                        b.getId(), b.getUserId(), b.getRoomId(),
+                        b.getCheckInAt(), b.getCheckOutAt(), b.getStatus()))
+                .collect(Collectors.toList());
     }
 }
