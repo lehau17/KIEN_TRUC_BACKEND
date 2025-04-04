@@ -5,6 +5,7 @@ import bookingservice.dto.BookingResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface BookingService {
@@ -21,4 +22,8 @@ public interface BookingService {
     boolean checkInBooking(String id);
 
     boolean checkOutBooking(String id);
+
+    List<BookingResponse> getBookingsByDate(LocalDate date, String type);
+
+    boolean isRoomBooked(String roomId, LocalDate checkInAt, LocalDate checkOutAt);
 }
