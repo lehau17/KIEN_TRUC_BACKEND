@@ -12,8 +12,10 @@ class RoomService {
         from_rating,
         to_rating,
         isActive,
-        sortBy = "createdAt", // default sort
-        sortOrder = "desc"
+        sortBy = "createdAt",
+        sortOrder = "desc",
+        page = 1,
+        limit = 10
       }) {
         const filter = {};
 
@@ -57,14 +59,32 @@ class RoomService {
           filter.isActive = isActive;
         }
 
-        // Xử lý sort
+        // Sort
         const sort = {};
         if (sortBy) {
           sort[sortBy] = sortOrder === "asc" ? 1 : -1;
         }
 
-        return await RoomRepository.layDanhSachTatCaPhong(filter, sort);
-    }
+        // Pagination
+        const skip = (page - 1) * limit;
+
+        // Chạy song song
+        const [total, rooms] = await Promise.all([
+        RoomRepository.countDocuments(filter),
+          RoomRepository.layDanhSachTatCaPhong(filter, sort, skip, limit)
+        ]);
+
+        return {
+          data: rooms,
+          pagination: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit)
+          }
+        };
+      }
+
 
 
   static async layPhongTheoID(roomId) {
