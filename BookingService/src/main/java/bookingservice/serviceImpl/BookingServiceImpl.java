@@ -34,6 +34,10 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponse createBooking(BookingRequest request) {
         validateBookingRequest(request);
 
+        if (isRoomBooked(request.getRoomId(), request.getCheckInAt(), request.getCheckOutAt())) {
+            throw new IllegalArgumentException("Phòng đã được đặt trong khoảng thời gian này.");
+        }
+
         Booking booking = new Booking(
                 request.getUserId(),
                 request.getRoomId(),
@@ -41,7 +45,6 @@ public class BookingServiceImpl implements BookingService {
                 request.getCheckOutAt()
         );
         bookingRepository.save(booking);
-
 
         BookingMessage message = new BookingMessage(
                 booking.getId(), booking.getUserId(), booking.getRoomId(),
@@ -153,5 +156,12 @@ public class BookingServiceImpl implements BookingService {
                         b.getId(), b.getUserId(), b.getRoomId(),
                         b.getCheckInAt(), b.getCheckOutAt(), b.getStatus()))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean isRoomBooked(String roomId, LocalDate checkInAt, LocalDate checkOutAt) {
+        List<Booking> confirmedBookings = bookingRepository.findByRoomIdAndStatusAndCheckInAt(
+                roomId, BookingStatus.CONFIRMED, checkOutAt, checkInAt);
+        return !confirmedBookings.isEmpty();
     }
 }

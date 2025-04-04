@@ -93,4 +93,17 @@ public class BookingController {
             return ResponseEntity.badRequest().body("Unexpected error: " + e.getMessage());
         }
     }
+
+    @GetMapping("/check-availability")
+    public ResponseEntity<?> checkRoomAvailability(
+            @RequestParam("roomId") String roomId,
+            @RequestParam("checkInAt") LocalDate checkInAt,
+            @RequestParam("checkOutAt") LocalDate checkOutAt) {
+        try {
+            boolean isBooked = bookingService.isRoomBooked(roomId, checkInAt, checkOutAt);
+            return ResponseEntity.ok(isBooked ? "Phòng đã được đặt." : "Phòng còn trống.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Unexpected error: " + e.getMessage());
+        }
+    }
 }

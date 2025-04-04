@@ -24,4 +24,6 @@ public interface BookingService {
     boolean checkOutBooking(String id);
 
     List<BookingResponse> getBookingsByDate(LocalDate date, String type);
+
+    boolean isRoomBooked(String roomId, LocalDate checkInAt, LocalDate checkOutAt);
 }
