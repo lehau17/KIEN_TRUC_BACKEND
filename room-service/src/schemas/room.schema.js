@@ -15,6 +15,10 @@ const RoomSchema = z.object({
     isActive: z.boolean().optional()
 });
 
+const RoomUpdateSchema = RoomSchema.partial();
+
 module.exports = {
-    RoomSchema
+    RoomSchema,
+    RoomUpdateSchema
 };
+

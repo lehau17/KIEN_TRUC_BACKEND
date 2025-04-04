@@ -1,4 +1,4 @@
-const { RoomSchema } = require("../schemas/room.schema");
+const { RoomSchema, RoomUpdateSchema } = require("../schemas/room.schema");
 const RoomService = require("../service/room.service");
 
 class RoomController {
@@ -30,6 +30,7 @@ class RoomController {
     // 📌 Cập nhật thông tin phòng
     static async capNhatPhong(req, res, next) {
         const { roomId } = req.params;
+        RoomUpdateSchema.parse(req.body);
         const updatedRoom = await RoomService.capNhatPhong(roomId, req.body);
         res.status(200).json(updatedRoom);
     }
