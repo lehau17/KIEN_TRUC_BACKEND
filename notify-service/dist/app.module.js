@@ -7,13 +7,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
-const config_1 = require("@nestjs/config");
+const mailer_1 = require("@nestjs-modules/mailer");
+const handlebars_adapter_1 = require("@nestjs-modules/mailer/dist/adapters/handlebars.adapter");
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const mail_module_1 = require("./mail/mail.module");
-const mailer_1 = require("@nestjs-modules/mailer");
-const handlebars_adapter_1 = require("@nestjs-modules/mailer/dist/adapters/handlebars.adapter");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;

@@ -29,7 +29,7 @@ let MailService = class MailService {
                 year: new Date().getFullYear(),
             },
         }).then(e => {
-            console.log("success mail", e);
+            console.log("success mail");
         }).catch(e => {
             console.log("check error", e);
         });
