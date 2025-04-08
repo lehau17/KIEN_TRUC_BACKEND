@@ -1,0 +1,65 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum Status {
+    active
+    deactive
+    verify
+    blocked
+}
+
+enum Permission {
+    READ_OWN
+    READ_ALL
+    WRITE_OWN
+    WRITE_ALL
+}
+
+model resources {
+    id          Int           @id @default(autoincrement())
+    path        String        @unique
+    status      Status?       @default(active)
+    created_at  DateTime      @default(now())
+    updated_at  DateTime      @default(now()) @updatedAt
+    permistions permissions[]
+}
+
+model permissions {
+    id          Int       @id @default(autoincrement())
+    role        roles     @relation(fields: [role_id], references: [id])
+    resource    resources @relation(fields: [resource_id], references: [id])
+    role_id     Int
+    resource_id Int
+    permission  String
+}
+
+model roles {
+    id          Int           @id @default(autoincrement())
+    role        String        @db.VarChar(50)
+    status      Status?       @default(active)
+    created_at  DateTime      @default(now())
+    updated_at  DateTime      @default(now()) @updatedAt
+    users       users[]
+    permistions permissions[]
+}
+
+model users {
+    id            Int      @id @default(autoincrement())
+    username      String   @unique
+    fullname      String
+    password      String
+    email         String   @unique
+    avatar        String?  @default("")
+    refresh_token String?  @default("")
+    status        Status?  @default(verify)
+    created_at    DateTime @default(now())
+    updated_at    DateTime @default(now()) @updatedAt
+    role          roles    @relation(fields: [role_id], references: [id])
+    role_id       Int
+}

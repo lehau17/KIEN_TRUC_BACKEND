@@ -32,7 +32,7 @@ class StateManagement {
                     throw new Error("❌ Max retry attempts reached.");
                 }
                 this.state = StateFunc.Block;
-                await new Promise((resolve) => setTimeout(resolve, this.timeRetry));
+                await new Promise((resolve) => setTimeout(resolve, this.timeRetry * retryCount));
             }
         }
         throw new Error("❌ Unknown error occurred.");
