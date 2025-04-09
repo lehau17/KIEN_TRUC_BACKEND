@@ -1,14 +1,30 @@
-// models/invoiceModel.js (Model hóa đơn)
 const mongoose = require('mongoose');
 
-const InvoiceSchema = new mongoose.Schema({
-    bookingId: { type: String, required: true },
-    userId: { type: String, required: true },
-    amount: { type: Number, required: true },
-    paymentMethod: { type: String, required: true },
-    status: { type: String, enum: ['paid', 'pending'], default: 'pending' },
-    createdAt: { type: Date, default: Date.now }
+const invoiceSchema = new mongoose.Schema({
+    bookingId: {
+        type: String,
+        required: [true, 'Booking ID is required']
+    },
+    userId: {
+        type: String,
+        required: [true, 'User ID is required']
+    },
+    amount: {
+        type: Number,
+        required: [true, 'Amount is required']
+    },
+    paymentMethod: {
+        type: String,
+        required: [true, 'Payment Method is required']
+    },
+    status: {
+        type: String,
+        default: 'unpaid'
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
 });
 
-const Invoice = mongoose.model('Invoice', InvoiceSchema);
-module.exports = Invoice;
+module.exports = mongoose.model('Invoice', invoiceSchema);

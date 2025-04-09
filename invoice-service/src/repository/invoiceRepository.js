@@ -25,4 +25,8 @@ const getAllInvoices = async () => {
     }
 };
 
-module.exports = { createInvoice, getInvoiceById, getAllInvoices };
+module.exports = {
+    createInvoice,
+    getInvoiceById,
+    getAllInvoices
+};

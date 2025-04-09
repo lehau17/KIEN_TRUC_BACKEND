@@ -3,7 +3,13 @@ const Invoice = require('../models/invoiceModel');
 
 const processBookingPayment = async (bookingData) => {
     try {
+        if (typeof bookingData === 'string') {
+            bookingData = JSON.parse(bookingData);
+        }
+
         console.log("🔄 Processing booking payment for:", bookingData);
+        console.log("👉 typeof bookingData:", typeof bookingData);
+        console.log("👉 bookingData keys:", Object.keys(bookingData));
 
         const invoiceData = {
             bookingId: bookingData.bookingId,
@@ -21,6 +27,7 @@ const processBookingPayment = async (bookingData) => {
         throw error;
     }
 };
+
 
 const updateInvoice = async (bookingData) => {
     try {
