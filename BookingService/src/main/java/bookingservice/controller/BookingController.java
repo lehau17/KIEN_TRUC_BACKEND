@@ -52,11 +52,14 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getAllBookingsPaged(pageable));
     }
 
-    @PutMapping("/{id}/confirm")
-    public ResponseEntity<String> confirmBooking(@PathVariable String id) {
-        return bookingService.confirmBooking(id)
-                ? ResponseEntity.ok("Booking confirmed successfully.")
-                : ResponseEntity.badRequest().body("Cannot confirm booking. Current status is not PENDING_PAYMENT.");
+    @PostMapping("/confirm/{id}")
+    public ResponseEntity<?> confirmBooking(@PathVariable String id) {
+        boolean result = bookingService.confirmBooking(id);
+        if (result) {
+            return ResponseEntity.ok("Booking đã xác nhận và gửi message CONFIRM");
+        } else {
+            return ResponseEntity.badRequest().body("Booking không ở trạng thái chờ thanh toán (PENDING_PAYMENT)");
+        }
     }
 
     @PutMapping("/{id}/cancel")

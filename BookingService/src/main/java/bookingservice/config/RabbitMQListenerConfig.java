@@ -10,6 +10,11 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQListenerConfig {
 
     @Bean
+    public Jackson2JsonMessageConverter jsonMessageConverter() {
+        return new Jackson2JsonMessageConverter();
+    }
+
+    @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
             ConnectionFactory connectionFactory,
             Jackson2JsonMessageConverter jsonMessageConverter) {
@@ -19,4 +24,3 @@ public class RabbitMQListenerConfig {
         return factory;
     }
 }
-
