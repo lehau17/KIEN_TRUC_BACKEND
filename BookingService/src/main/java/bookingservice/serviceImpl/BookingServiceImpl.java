@@ -154,6 +154,10 @@ public class BookingServiceImpl implements BookingService {
                 booking.getId(), booking.getUserId(), booking.getRoomId(),
                 booking.getPrice(), "CREDIT_CARD", booking.getStatus().name());
         rabbitMQProducer.sendMessage(action, message);
+
+        if ("CHECKIN".equals(action) || "CHECKOUT".equals(action)) {
+            rabbitMQProducer.sendMessage(action, message);
+        }
         return true;
     }
 
