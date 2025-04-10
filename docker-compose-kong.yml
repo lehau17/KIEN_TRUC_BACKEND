@@ -1,7 +1,7 @@
 version: "3.8"
 
 networks:
-  tyk-network:
+  kong-network:
     driver: bridge
 
 services:
@@ -15,31 +15,37 @@ services:
       - 5672:5672
       - 15672:15672
     networks:
-      - tyk-network
+      - kong-network
 
   redis:
     image: redis:6
     container_name: redis
     networks:
-      - tyk-network
+      - kong-network
     ports:
       - "6379:6379"
 
-  tyk-gateway:
-    image: tykio/tyk-gateway:latest
-    platform: linux/amd64
-    container_name: tyk-gateway
-    networks:
-      - tyk-network
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./tyk-gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
-      - ./tyk-gateway/apps:/opt/tyk-gateway/apps
+  kong:
+    image: kong:3.6
+    container_name: kong
+    restart: always
     environment:
-      TYK_GW_SECRET: "352d20ee67be67f6340b4c0605b044b7"
+      KONG_DATABASE: "off"  # DB-less mode
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_PROXY_LISTEN: 0.0.0.0:8080
+    volumes:
+      - ./kong/kong.yml:/usr/local/kong/kong.yml
+    ports:
+      - "8080:8080"  # Proxy (người dùng gọi qua đây)
+      - "8001:8001"  # Admin API (nội bộ cấu hình)
+    networks:
+      - kong-network
     depends_on:
-      - redis
       - user-service
 
   postgres:
@@ -55,7 +61,7 @@ services:
     ports:
       - '5432:5432'
     networks:
-      - tyk-network
+      - kong-network
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U admin -d user_service']
       interval: 10s
@@ -68,7 +74,7 @@ services:
     ports:
       - '5000:5000'
     networks:
-      - tyk-network
+      - kong-network
     environment:
       DATABASE_URL: 'postgresql://admin:admin1234@postgres:5432/user_service?schema=public'
       JWT_ACCESS_TOKEN_SECRET: 'mysecretkey'
@@ -81,26 +87,27 @@ services:
       postgres:
         condition: service_healthy
 
+  # Room service with MongoDB connection
   room-service:
     container_name: room-service
     build: ./room-service
     ports:
       - '5001:5001'
     networks:
-      - tyk-network
+      - kong-network
     environment:
-      MONGO_URI: 'mongodb://mongo:27017/room-service'
+      MONGO_URI: 'mongodb://mongo:27017/room-service'  # Kết nối với MongoDB
     depends_on:
-      - mongo
+      - mongo  # Đảm bảo mongo được khởi động trước
 
   # Thêm MongoDB service
   mongo:
     container_name: mongo
     image: mongo:latest
     networks:
-      - tyk-network
+      - kong-network
     ports:
-      - "27017:27017"
+      - "27017:27017"  # Mở cổng MongoDB
     volumes:
-      - ./data/mongo:/data/db
+      - ./data/mongo:/data/db  # Lưu trữ dữ liệu MongoDB ngoài container
     restart: always

@@ -2,8 +2,8 @@ const express = require("express")
 const { ketNoiDatabase } = require("./src/config")
 const mainRouter = require("./src/router")
 const { ZodError } = require("zod")
+const { errorMessages, detailedErrorMessages } = require("./src/utils/errorValidateCode")
 require('dotenv').config()
-
 
 const app = express()
 app.use(express.json())
@@ -19,18 +19,23 @@ app.use((err, req, res, next) => {
     console.log("=>>>>>>> Error Middleware:", err);
     // ✅ Xử lý lỗi Zod
     if (err instanceof ZodError) {
-        // const validationErrors = err.errors.map(e => ({
-        //     field: e.path.join("."),
-        //     code: e.message,
-        //     message: ErrorCodeMap[e.message]?.message || e.message,
-        //   }));
+        console.log("cjeck error>>>", err)
+        let errorObject = {}
+        const errorDetails = err.errors.map(e => {
+            const field = e.path[0] // Lấy tên trường bị lỗi
+            const errorCode = e.message // Mã lỗi từ Zod
+            const detailedMessage = detailedErrorMessages[errorCode] || { [field]: errorCode }
+            console.log(field, errorCode, detailedMessage)
+            errorObject = { ...errorObject, ...detailedMessage }
+            return {
+                detailedMessage
+            }
+        });
 
-        const firstError = err.errors[0];
-        return res.status(400).json({
+        return res.status(err.status || 400).json({
             isSuccess: false,
-            message: firstError.message || "Validation error",
-            code: firstError.message,
-            field: firstError.path.join("."),
+            message: errorObject,
+            code: err.code || "ERROR",
         });
     }
 
@@ -49,7 +54,7 @@ app.use((err, req, res, next) => {
 });
 
 
-app.listen(3000, async () => {
+app.listen(5001, async () => {
     await ketNoiDatabase()
     console.log("App is listening on port ${3000}")
 })

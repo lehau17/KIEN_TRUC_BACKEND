@@ -115,3 +115,42 @@ export const StatusCodeResponse: Record<string, number> = {
     // common
     [MessageResponse.SUCCESS]: 9000,
 };
+
+
+export enum ErrorValidateCode {
+    USERNAME_REQUIRED = 'V_E_100001',
+    FULLNAME_REQUIRED = 'V_E_100002',
+    PASSWORD_REQUIRED = 'V_E_100003',
+    PASSWORD_MIN_LENGTH = 'V_E_100004',
+    PASSWORD_FORMAT = 'V_E_100005',
+    EMAIL_REQUIRED = 'V_E_100006',
+    EMAIL_INVALID = 'V_E_100007',
+}
+
+
+export const ErrorMessages = {
+    [ErrorValidateCode.USERNAME_REQUIRED]: {
+        username: 'Username không được để trống',
+    },
+    [ErrorValidateCode.FULLNAME_REQUIRED]: {
+        fullname: 'Họ và tên không được để trống',
+    },
+    [ErrorValidateCode.PASSWORD_REQUIRED]: {
+        password: 'Mật khẩu không được để trống',
+    },
+    [ErrorValidateCode.PASSWORD_MIN_LENGTH]: {
+        password: 'Mật khẩu phải có ít nhất 6 ký tự',
+    },
+    [ErrorValidateCode.PASSWORD_FORMAT]: {
+        password: 'Mật khẩu phải có ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt',
+    },
+    [ErrorValidateCode.EMAIL_REQUIRED]: {
+        email: 'Email không được để trống',
+    },
+    [ErrorValidateCode.EMAIL_INVALID]: {
+        email: 'Email không hợp lệ',
+    },
+};
+
+
+

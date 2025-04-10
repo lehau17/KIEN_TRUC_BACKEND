@@ -37,7 +37,10 @@ export class JsonWebTokenService {
     }
 
     async signToken(payload: TokenPayloadCreateDto): Promise<string> {
-        return this.jwtService.signAsync(payload, {
+        return this.jwtService.signAsync({
+            ...payload,
+            iss: "my-key"
+        }, {
             secret:
                 payload.typeToken === TokenType.ACCESS_TOKEN
                     ? this.accessTokenKey

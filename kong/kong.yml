@@ -1,0 +1,113 @@
+_format_version: "3.0"
+
+services:
+  - name: user-service
+    url: http://user-service:5000
+    routes:
+      # PUBLIC ROUTES
+      - name: register
+        paths: ["/auth/register"]
+        strip_path: false
+
+      - name: login
+        paths: ["/auth/login"]
+        strip_path: false
+
+      - name: refresh-token
+        paths: ["/auth/refresh-token"]
+        strip_path: false
+
+      - name: verify-account
+        paths: ["/auth/verify-account"]
+        strip_path: false
+
+      - name: verify-change-password
+        paths: ["/auth/verify-change-password"]
+        strip_path: false
+
+      # PROTECTED ROUTES (Require JWT)
+      - name: change-password
+        paths: ["/auth/change-password"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: request-change-password
+        paths: ["/auth/request-change-password"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+  - name: room-service
+    url: http://room-service:5001
+    routes:
+      # PROTECTED ROUTES (Require JWT)
+      - name: create-room
+        paths: ["/api/room"]
+        methods:
+          - POST
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: update-room
+        paths: ["/api/room/:roomId"]
+        strip_path: false
+        methods:
+          - PUT
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: delete-room
+        paths: ["/api/room/:roomId"]
+        strip_path: false
+        methods:
+          - DELETE
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: update-room-status
+        paths: ["/api/room/:roomId/status"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: get-rooms-by-status
+        paths: ["/api/room/status/:status"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      # PUBLIC ROUTES (không cần JWT)
+      - name: get-room-list
+        paths: ["/api/room"]
+        methods:
+          - GET
+        strip_path: false
+
+      - name: get-room-by-id
+        paths: ["/api/room/:roomId"]
+        methods:
+          - GET
+        strip_path: false
+
+consumers:
+  - username: api-user
+    jwt_secrets:
+      - key: my-key
+        algorithm: HS256
+        secret: mysecretkey
