@@ -19,14 +19,41 @@ services:
       - name: login
         paths: ["/api/auth/login"]
         strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: redis
+              limit_by: ip
+              redis:
+                host: redis        # hoặc IP/hostname của Redis container
+                port: 6379
 
       - name: refresh-token
         paths: ["/api/auth/refresh-token"]
         strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: redis
+              limit_by: ip
+              redis:
+                host: redis        # hoặc IP/hostname của Redis container
+                port: 6379
 
       - name: verify-account
         paths: ["/api/auth/verify-account"]
         strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: redis
+              limit_by: ip
+              redis:
+                host: redis        # hoặc IP/hostname của Redis container
+                port: 6379
 
       - name: verify-change-password
         paths: ["/api/auth/verify-change-password"]
@@ -40,6 +67,14 @@ services:
           - name: jwt
             config:
               claims_to_verify: [exp]
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: redis
+              limit_by: ip
+              redis:
+                host: redis        # hoặc IP/hostname của Redis container
+                port: 6379
 
       - name: request-change-password
         paths: ["/api/auth/request-change-password"]
@@ -49,6 +84,14 @@ services:
           - name: jwt
             config:
               claims_to_verify: [exp]
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: redis
+              limit_by: ip
+              redis:
+                host: redis        # hoặc IP/hostname của Redis container
+                port: 6379
 
 
 
@@ -115,8 +158,9 @@ services:
         methods: ["GET"]
         strip_path: false
 
+
       - name: create-room
-        paths: ["/api/room$"]
+        paths: ["/api/room$", "/api/room"]
         methods: ["POST"]
         strip_path: false
         plugins:
@@ -228,6 +272,11 @@ services:
         methods: ["PUT"]
         strip_path: false
         plugins:
+          - name: rate-limiting
+            config:
+              minute: 10
+              limit_by: consumer
+              policy: local
           - name: jwt
             config:
               claims_to_verify: [exp]
@@ -237,6 +286,11 @@ services:
         methods: ["GET"]
         strip_path: false
         plugins:
+          - name: rate-limiting
+            config:
+              minute: 10
+              limit_by: consumer
+              policy: local
           - name: jwt
             config:
               claims_to_verify: [exp]
