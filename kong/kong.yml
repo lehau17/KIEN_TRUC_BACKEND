@@ -1,5 +1,12 @@
 _format_version: "3.0"
 
+
+plugins:
+  - name: rate-limiting
+    config:
+      minute: 10
+      policy: local
+
 services:
   # --- user-service ---
   - name: user-service
