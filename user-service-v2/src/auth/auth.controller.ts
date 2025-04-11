@@ -29,8 +29,8 @@ import { AuthService } from './auth.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { LoginDto } from './dto/login.dto';
 
-@Controller('auth')
-@ApiTags('auth')
+@Controller('/api/auth')
+@ApiTags('/api/auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
 

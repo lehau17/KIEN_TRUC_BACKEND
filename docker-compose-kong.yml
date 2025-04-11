@@ -30,7 +30,7 @@ services:
     container_name: kong
     restart: always
     environment:
-      KONG_DATABASE: "off"  # DB-less mode
+      KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /usr/local/kong/kong.yml
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
@@ -41,8 +41,8 @@ services:
     volumes:
       - ./kong/kong.yml:/usr/local/kong/kong.yml
     ports:
-      - "8080:8080"  # Proxy (người dùng gọi qua đây)
-      - "8001:8001"  # Admin API (nội bộ cấu hình)
+      - "8080:8080"
+      - "8001:8001"
     networks:
       - kong-network
     depends_on:
@@ -77,7 +77,7 @@ services:
       - kong-network
     environment:
       DATABASE_URL: 'postgresql://admin:admin1234@postgres:5432/user_service?schema=public'
-      JWT_ACCESS_TOKEN_SECRET: 'mysecretkey'
+      JWT_ACCESS_TOKEN_SECRET: 'sndkjbvfskdvfhjsvdfjhvsdjfhvsdkjfhvsjdhfvskdhvfkjshvdfhjk'
       JWT_REFRESH_TOKEN_SECRET: 'jwt_refresh_token'
       JWT_ACCESS_TOKEN_EXPIRES: '15m'
       JWT_REFRESH_TOKEN_EXPIRES: '7d'
@@ -87,7 +87,6 @@ services:
       postgres:
         condition: service_healthy
 
-  # Room service with MongoDB connection
   room-service:
     container_name: room-service
     build: ./room-service
@@ -96,18 +95,68 @@ services:
     networks:
       - kong-network
     environment:
-      MONGO_URI: 'mongodb://mongo:27017/room-service'  # Kết nối với MongoDB
+      MONGO_URI: 'mongodb://mongo:27017/room-service'
     depends_on:
-      - mongo  # Đảm bảo mongo được khởi động trước
+      - mongo
 
-  # Thêm MongoDB service
+
+  notify-service:
+    container_name: notify-service
+    build: ./notify-service
+    ports:
+      - '5005:5005'
+    networks:
+      - kong-network
+    environment:
+      MONGO_URI: 'mongodb://mongo:27017/room-service'
+      PORT: 5005
+      RABBITMQ_URL: amqp://admin:1234@rabbitmq:5672
+      RABBITMQ_QUEUE: booking_queue
+    depends_on:
+      - mongo
+
+
+  invoice-service:
+    container_name: invoice-service
+    build: ./invoice-service
+    ports:
+      - '5004:5004'
+    networks:
+      - kong-network
+    environment:
+      PORT: 5004
+      MONGO_URI: mongodb://mongo:27017/invoiceService
+      RABBITMQ_URL: amqp://admin:1234@rabbitmq:5672
+      RABBITMQ_QUEUE: booking_queue
+    depends_on:
+      - rabbitmq
+      - mongo
   mongo:
     container_name: mongo
     image: mongo:latest
     networks:
       - kong-network
     ports:
-      - "27017:27017"  # Mở cổng MongoDB
+      - "27017:27017"
     volumes:
-      - ./data/mongo:/data/db  # Lưu trữ dữ liệu MongoDB ngoài container
+      - ./data/mongo:/data/db
     restart: always
+
+  booking-service:
+    container_name: booking-service
+    build: ./BookingService
+    ports:
+      - '8085:8080'
+    networks:
+      - kong-network
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/booking-service
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: admin
+      RABBITMQ_PASSWORD: 1234
+      SERVER_PORT: 8080
+    depends_on:
+      - mongo
+      - rabbitmq
+

@@ -1,0 +1,669 @@
+{
+	"info": {
+		"_postman_id": "95919039-6054-4851-b6f4-31f92ec66728",
+		"name": "gateway",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21494024"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "regíter",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\" : \"letrunghau\",\n    \"password\" : \"3881016Hau@\",\n    \"email\" : \"hau17131203@gmail.com\",\n    \"fullname\" : \"le trung hau\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/auth/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\" : \"letrunghau\",\n    \"password\"  : \"3881016Hau@\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/auth/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "refresh token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/auth/refresh-token",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"refresh-token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "room",
+			"item": [
+				{
+					"name": "create room",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjExLCJ1c2VybmFtZSI6ImxldHJ1bmdoYXUiLCJyb2xlcyI6WyJVU0VSIl0sInR5cGVUb2tlbiI6ImFjY2Vzc1Rva2VuIiwiaXNzIjoibXkta2V5IiwiaWF0IjoxNzQ0MzUyOTg2LCJleHAiOjE3NDQzNTM4ODZ9.y3MvnrqJEm6OmUtsmSYqSzIgrp65gvLe8nIJD-Rwc4c",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\" : \"le trung hau\",\n    \"price\" : 100,\n    \"capacity\" : 4,\n    \"roomType\" : \"Standard\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/room",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"room"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get room",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/room?from_price=10&to_price=80&roomType=standard&status=standard&from_rating=&to_rating&isActive&sortBy&sortOrder&page=1&limit=40",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"room"
+							],
+							"query": [
+								{
+									"key": "from_price",
+									"value": "10"
+								},
+								{
+									"key": "to_price",
+									"value": "80"
+								},
+								{
+									"key": "roomType",
+									"value": "standard"
+								},
+								{
+									"key": "status",
+									"value": "standard"
+								},
+								{
+									"key": "from_rating",
+									"value": ""
+								},
+								{
+									"key": "to_rating",
+									"value": null
+								},
+								{
+									"key": "isActive",
+									"value": null
+								},
+								{
+									"key": "sortBy",
+									"value": null
+								},
+								{
+									"key": "sortOrder",
+									"value": null
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "40"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "lấy phòng theo ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/room/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"room",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "thay đổi trạng thái thành xoá",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjE0LCJ1c2VybmFtZSI6ImxldHJ1bmdoYXUiLCJyb2xlcyI6WyJVU0VSIl0sInR5cGVUb2tlbiI6ImFjY2Vzc1Rva2VuIiwiaXNzIjoibXkta2V5IiwiaWF0IjoxNzQ0MzUzMzEwLCJleHAiOjE3NDQzNTQyMTB9.ajX3iyK7pvT3is_3nF1EcmUEVdvBCWl55aohW5vML_g",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/room/:roomID",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"room",
+								":roomID"
+							],
+							"variable": [
+								{
+									"key": "roomID",
+									"value": "67f897d7f74dedb7d43ba257"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cập nhật thông tin phòng",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjE0LCJ1c2VybmFtZSI6ImxldHJ1bmdoYXUiLCJyb2xlcyI6WyJVU0VSIl0sInR5cGVUb2tlbiI6ImFjY2Vzc1Rva2VuIiwiaXNzIjoibXkta2V5IiwiaWF0IjoxNzQ0MzUzMzEwLCJleHAiOjE3NDQzNTQyMTB9.ajX3iyK7pvT3is_3nF1EcmUEVdvBCWl55aohW5vML_g",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"price\" : 100000\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/room/67f7a4494e0e77d4f5f0d910",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"room",
+								"67f7a4494e0e77d4f5f0d910"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Employee",
+			"item": [
+				{
+					"name": "get all",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjExLCJ1c2VybmFtZSI6ImxldHJ1bmdoYXUiLCJyb2xlcyI6WyJBRE1JTiJdLCJ0eXBlVG9rZW4iOiJhY2Nlc3NUb2tlbiIsImlzcyI6Im15LWtleSIsImlhdCI6MTc0NDM1MzE3MCwiZXhwIjoxNzQ0MzU0MDcwMDAwMDB9.lp6WGvO5HtSZHjcgcQnhgFbW3MLNhMBnZVVamkXQMkM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/employees",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"employees"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get me",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjExLCJ1c2VybmFtZSI6ImxldHJ1bmdoYXUiLCJyb2xlcyI6WyJBRE1JTiJdLCJ0eXBlVG9rZW4iOiJhY2Nlc3NUb2tlbiIsImlzcyI6Im15LWtleSIsImlhdCI6MTc0NDM1MzE3MCwiZXhwIjoxNzQ0MzU0MDcwMDAwMDB9.lp6WGvO5HtSZHjcgcQnhgFbW3MLNhMBnZVVamkXQMkM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/employees/me",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"employees",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update me",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjExLCJ1c2VybmFtZSI6ImxldHJ1bmdoYXUiLCJyb2xlcyI6WyJBRE1JTiJdLCJ0eXBlVG9rZW4iOiJhY2Nlc3NUb2tlbiIsImlzcyI6Im15LWtleSIsImlhdCI6MTc0NDM1MzE3MCwiZXhwIjoxNzQ0MzU0MDcwMDAwMDB9.lp6WGvO5HtSZHjcgcQnhgFbW3MLNhMBnZVVamkXQMkM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fullname\" : \"le trung hau\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/employees/me",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"employees",
+								"me"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "booking serice",
+			"item": [
+				{
+					"name": "create booking",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjExLCJ1c2VybmFtZSI6ImxldHJ1bmdoYXUiLCJyb2xlcyI6WyJBRE1JTiJdLCJ0eXBlVG9rZW4iOiJhY2Nlc3NUb2tlbiIsImlzcyI6Im15LWtleSIsImlhdCI6MTc0NDM1MzE3MCwiZXhwIjoxNzQ0MzU0MDcwMDAwMDB9.lp6WGvO5HtSZHjcgcQnhgFbW3MLNhMBnZVVamkXQMkM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/bookings",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"bookings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get all booking",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjExLCJ1c2VybmFtZSI6ImxldHJ1bmdoYXUiLCJyb2xlcyI6WyJBRE1JTiJdLCJ0eXBlVG9rZW4iOiJhY2Nlc3NUb2tlbiIsImlzcyI6Im15LWtleSIsImlhdCI6MTc0NDM1MzE3MCwiZXhwIjoxNzQ0MzU0MDcwMDAwMDB9.lp6WGvO5HtSZHjcgcQnhgFbW3MLNhMBnZVVamkXQMkM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/bookings",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"bookings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get all booking pagination",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjExLCJ1c2VybmFtZSI6ImxldHJ1bmdoYXUiLCJyb2xlcyI6WyJBRE1JTiJdLCJ0eXBlVG9rZW4iOiJhY2Nlc3NUb2tlbiIsImlzcyI6Im15LWtleSIsImlhdCI6MTc0NDM1MzE3MCwiZXhwIjoxNzQ0MzU0MDcwMDAwMDB9.lp6WGvO5HtSZHjcgcQnhgFbW3MLNhMBnZVVamkXQMkM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/bookings/paged",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"bookings",
+								"paged"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "confirm booking",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/bookings/:id/confirm",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"bookings",
+								":id",
+								"confirm"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cancel booking",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/bookings/:id/cancel",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"bookings",
+								":id",
+								"cancel"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "check in",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/bookings/:id/checkin",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"bookings",
+								":id",
+								"checkin"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cehck out",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/bookings/:id/checkout",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"bookings",
+								":id",
+								"checkout"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get by date",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/bookings/by-date",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"bookings",
+								"by-date"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "check-availability",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/bookings/check-availability",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"bookings",
+								"check-availability"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
