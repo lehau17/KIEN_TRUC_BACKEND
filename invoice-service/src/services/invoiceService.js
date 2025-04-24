@@ -1,16 +1,18 @@
 const invoiceRepository = require('../repository/invoiceRepository');
 const Invoice = require('../models/invoiceModel');
 const { bookingDataSchema } = require('../validators/invoiceValidator');
+const redisClient = require('../config/redisClient');
 
+const CACHE_TTL = 10; // cache thời gian 5 phút
+
+// ✅ Tạo hóa đơn mới
 const processBookingPayment = async (bookingData) => {
     try {
         if (typeof bookingData === 'string') {
             bookingData = JSON.parse(bookingData);
         }
 
-        // ✅ chuẩn hóa status về lowercase trước khi validate
         bookingData.status = bookingData.status.toLowerCase();
-
         const { error } = bookingDataSchema.validate(bookingData);
         if (error) throw new Error('Validation failed: ' + error.details[0].message);
 
@@ -23,6 +25,11 @@ const processBookingPayment = async (bookingData) => {
         };
 
         const newInvoice = await invoiceRepository.createInvoice(invoiceData);
+
+        // ❌ Xóa cache liên quan
+        await redisClient.del(`invoice:all`);
+        await redisClient.del(`invoice:booking:${bookingData.bookingId}`);
+
         console.log("✅ Invoice created successfully:", newInvoice);
         return newInvoice;
     } catch (error) {
@@ -31,15 +38,14 @@ const processBookingPayment = async (bookingData) => {
     }
 };
 
+// ✅ Cập nhật hóa đơn
 const updateInvoice = async (bookingData) => {
     try {
         if (typeof bookingData === 'string') {
             bookingData = JSON.parse(bookingData);
         }
 
-        // ✅ chuẩn hóa status về lowercase trước khi validate
         bookingData.status = bookingData.status.toLowerCase();
-
         const { error } = bookingDataSchema.validate(bookingData);
         if (error) throw new Error('Validation failed: ' + error.details[0].message);
 
@@ -50,6 +56,13 @@ const updateInvoice = async (bookingData) => {
             invoice.paymentMethod = bookingData.paymentMethod;
             invoice.status = 'paid';
             await invoice.save();
+
+            // ❌ Xóa cache
+            await redisClient.del(`invoice:${invoice._id}`);
+            await redisClient.del(`invoice:export:${invoice._id}`);
+            await redisClient.del(`invoice:booking:${bookingData.bookingId}`);
+            await redisClient.del(`invoice:all`);
+
             console.log(`✅ Invoice updated for Booking ID: ${bookingData.bookingId}`);
             return true;
         } else {
@@ -62,20 +75,50 @@ const updateInvoice = async (bookingData) => {
     }
 };
 
-
+// ✅ Lấy tất cả hóa đơn (có cache)
 const fetchAllInvoices = async () => {
-    return await invoiceRepository.getAllInvoices();
+    const cacheKey = `invoice:all`;
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+        console.log(`🔁 Cache hit for ${cacheKey}`);
+        return JSON.parse(cached);
+    }
+
+    const invoices = await invoiceRepository.getAllInvoices();
+    await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(invoices));
+    return invoices;
 };
 
+// ✅ Lấy hóa đơn theo ID (có cache)
 const fetchInvoiceById = async (id) => {
-    return await invoiceRepository.getInvoiceById(id);
+    const cacheKey = `invoice:${id}`;
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+        console.log(`🔁 Cache hit for ${cacheKey}`);
+        return JSON.parse(cached);
+    }
+
+    const invoice = await invoiceRepository.getInvoiceById(id);
+    if (invoice) {
+        await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(invoice));
+    }
+
+    return invoice;
 };
 
+// ✅ Xuất HTML hóa đơn (có cache)
 const exportInvoiceHTML = async (id) => {
+    const cacheKey = `invoice:export:${id}`;
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+        console.log(`🔁 HTML cache hit for ${cacheKey}`);
+        return cached;
+    }
+
     const invoice = await invoiceRepository.getInvoiceById(id);
     if (!invoice) return null;
 
-    return `
+    const html = `
         <html>
             <head><title>Invoice ${invoice._id}</title></head>
             <body>
@@ -88,6 +131,41 @@ const exportInvoiceHTML = async (id) => {
             </body>
         </html>
     `;
+
+    await redisClient.setEx(cacheKey, CACHE_TTL, html);
+    return html;
+};
+
+// ✅ Tạo hóa đơn mới
+const createInvoice = async (invoiceData) => {
+    try {
+        // Kiểm tra và validate dữ liệu
+        const { error } = bookingDataSchema.validate(invoiceData);
+        if (error) throw new Error('Validation failed: ' + error.details[0].message);
+
+        // Tạo hóa đơn mới từ dữ liệu đầu vào
+        const newInvoice = new Invoice({
+            bookingId: invoiceData.bookingId,
+            userId: invoiceData.userId,
+            roomId: invoiceData.roomId,
+            amount: invoiceData.amount,
+            paymentMethod: invoiceData.paymentMethod,
+            status: 'unpaid', // Mặc định là chưa thanh toán
+        });
+
+        // Lưu hóa đơn vào cơ sở dữ liệu
+        await newInvoice.save();
+
+        // ❌ Xóa cache liên quan đến hóa đơn (nếu có)
+        await redisClient.del(`invoice:all`);
+        await redisClient.del(`invoice:booking:${invoiceData.bookingId}`);
+
+        console.log('✅ Invoice created successfully:', newInvoice);
+        return newInvoice;
+    } catch (error) {
+        console.error('❌ Error creating invoice:', error.message);
+        throw error;
+    }
 };
 
 module.exports = {
@@ -95,5 +173,6 @@ module.exports = {
     updateInvoice,
     fetchAllInvoices,
     fetchInvoiceById,
-    exportInvoiceHTML
+    exportInvoiceHTML,
+    createInvoice
 };

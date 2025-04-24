@@ -21,4 +21,33 @@ const getInvoice = async (req, res) => {
     }
 };
 
-module.exports = { getInvoices, getInvoice };
+// 📌 Xuất chi tiết hóa đơn dưới dạng HTML
+const exportInvoice = async (req, res) => {
+    try {
+        const invoiceHTML = await invoiceService.exportInvoiceHTML(req.params.id);
+        if (!invoiceHTML) {
+            return res.status(404).send('<h1>Invoice Not Found</h1>');
+        }
+        res.send(invoiceHTML);
+    } catch (error) {
+        res.status(500).send('<h1>Internal Server Error</h1>');
+    }
+};
+
+const createInvoice = async (req, res) => {
+    try {
+        const invoiceData = req.body;
+        const newInvoice = await invoiceService.createInvoice(invoiceData);
+        res.status(201).json(newInvoice);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
+module.exports = {
+    getInvoices,
+    getInvoice,
+    exportInvoice,
+    createInvoice
+};
