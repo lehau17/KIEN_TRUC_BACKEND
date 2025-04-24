@@ -9,6 +9,10 @@ const invoiceSchema = new mongoose.Schema({
         type: String,
         required: [true, 'User ID is required']
     },
+    roomId: {
+        type: String,
+        required: [true, 'Room ID is required']
+    },
     amount: {
         type: Number,
         required: [true, 'Amount is required']
