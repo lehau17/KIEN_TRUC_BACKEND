@@ -70,7 +70,7 @@ class RoomService {
 
         // Chạy song song
         const [total, rooms] = await Promise.all([
-            RoomRepository.countDocuments(filter),
+            RoomRepository.demSoLuong(filter),
             RoomRepository.layDanhSachTatCaPhong(filter, sort, skip, limit)
         ]);
 

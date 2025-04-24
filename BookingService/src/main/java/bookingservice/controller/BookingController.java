@@ -1,21 +1,28 @@
 package bookingservice.controller;
 
-import bookingservice.dto.BookingRequest;
-import bookingservice.dto.BookingResponse;
-import bookingservice.service.BookingService;
-import jakarta.validation.Valid;
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.stream.Collectors;
+import bookingservice.dto.BookingRequest;
+import bookingservice.dto.BookingResponse;
+import bookingservice.entity.ApiResponse;
+import bookingservice.service.BookingService;
+import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/bookings")
+@RequestMapping("/api/bookings")
 public class BookingController {
 
     private final BookingService bookingService;
@@ -25,85 +32,101 @@ public class BookingController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createBooking(@Valid @RequestBody BookingRequest request, BindingResult result) {
-        if (result.hasErrors()) {
-            String errorMessage = result.getAllErrors().stream()
-                    .map(error -> error.getDefaultMessage())
-                    .collect(Collectors.joining(", "));
-            return ResponseEntity.badRequest().body("Validation errors: " + errorMessage);
-        }
+    public ResponseEntity<ApiResponse<BookingResponse>> createBooking(@Valid @RequestBody BookingRequest request
+    // BindingResult result
+    ) {
+        // if (result.hasErrors()) {
+        // String errorMessage = result.getAllErrors().stream()
+        // .map(error -> error.getDefaultMessage())
+        // .collect(Collectors.joining(", "));
+        // return ResponseEntity.badRequest().body(new ApiResponse<>(errorMessage,
+        // false, null));
+        // }
         try {
             BookingResponse response = bookingService.createBooking(request);
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(new ApiResponse<>("Booking created successfully", true, response));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Error creating booking: " + e.getMessage());
+            return ResponseEntity.badRequest().body(new ApiResponse<>("Error: " + e.getMessage(), false, null));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Unexpected error: " + e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>("Unexpected error: " + e.getMessage(), false, null));
         }
     }
 
     @GetMapping
-    public ResponseEntity<List<BookingResponse>> getAllBookings() {
-        return ResponseEntity.ok(bookingService.getAllBookings());
+    public ResponseEntity<ApiResponse<List<BookingResponse>>> getAllBookings() {
+        return ResponseEntity.ok(new ApiResponse<>("Fetched all bookings", true, bookingService.getAllBookings()));
     }
 
     @GetMapping("/paged")
-    public ResponseEntity<Page<BookingResponse>> getAllBookingsPaged(Pageable pageable) {
-        return ResponseEntity.ok(bookingService.getAllBookingsPaged(pageable));
+    public ResponseEntity<ApiResponse<Page<BookingResponse>>> getAllBookingsPaged(Pageable pageable) {
+        return ResponseEntity
+                .ok(new ApiResponse<>("Fetched paged bookings", true, bookingService.getAllBookingsPaged(pageable)));
     }
 
     @PutMapping("/{id}/confirm")
-    public ResponseEntity<String> confirmBooking(@PathVariable String id) {
-        return bookingService.confirmBooking(id)
-                ? ResponseEntity.ok("Booking confirmed successfully.")
-                : ResponseEntity.badRequest().body("Cannot confirm booking. Current status is not PENDING_PAYMENT.");
+    public ResponseEntity<ApiResponse<String>> confirmBooking(@PathVariable String id) {
+        if (bookingService.confirmBooking(id)) {
+            return ResponseEntity.ok(new ApiResponse<>("Booking confirmed successfully", true, null));
+        }
+        return ResponseEntity.badRequest()
+                .body(new ApiResponse<>("Cannot confirm booking. Current status is not PENDING_PAYMENT.", false, null));
     }
 
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<String> cancelBooking(@PathVariable String id) {
-        return bookingService.cancelBooking(id)
-                ? ResponseEntity.ok("Booking canceled successfully.")
-                : ResponseEntity.badRequest().body("Cannot cancel booking. Current status is not PENDING_PAYMENT.");
+    public ResponseEntity<ApiResponse<String>> cancelBooking(@PathVariable String id) {
+        if (bookingService.cancelBooking(id)) {
+            return ResponseEntity.ok(new ApiResponse<>("Booking canceled successfully", true, null));
+        }
+        return ResponseEntity.badRequest()
+                .body(new ApiResponse<>("Cannot cancel booking. Current status is not PENDING_PAYMENT.", false, null));
     }
 
     @PutMapping("/{id}/checkin")
-    public ResponseEntity<String> checkInBooking(@PathVariable String id) {
-        return bookingService.checkInBooking(id)
-                ? ResponseEntity.ok("Checked in successfully.")
-                : ResponseEntity.badRequest().body("Cannot check in. Booking must be CONFIRMED.");
+    public ResponseEntity<ApiResponse<String>> checkInBooking(@PathVariable String id) {
+        if (bookingService.checkInBooking(id)) {
+            return ResponseEntity.ok(new ApiResponse<>("Checked in successfully", true, null));
+        }
+        return ResponseEntity.badRequest()
+                .body(new ApiResponse<>("Cannot check in. Booking must be CONFIRMED.", false, null));
     }
 
     @PutMapping("/{id}/checkout")
-    public ResponseEntity<String> checkOutBooking(@PathVariable String id) {
-        return bookingService.checkOutBooking(id)
-                ? ResponseEntity.ok("Checked out successfully.")
-                : ResponseEntity.badRequest().body("Cannot check out. Booking must be CHECKED_IN.");
+    public ResponseEntity<ApiResponse<String>> checkOutBooking(@PathVariable String id) {
+        if (bookingService.checkOutBooking(id)) {
+            return ResponseEntity.ok(new ApiResponse<>("Checked out successfully", true, null));
+        }
+        return ResponseEntity.badRequest()
+                .body(new ApiResponse<>("Cannot check out. Booking must be CHECKED_IN.", false, null));
     }
 
     @GetMapping("/by-date")
-    public ResponseEntity<?> getBookingsByDate(
+    public ResponseEntity<ApiResponse<List<BookingResponse>>> getBookingsByDate(
             @RequestParam("date") LocalDate date,
             @RequestParam("type") String type) {
         try {
             List<BookingResponse> bookings = bookingService.getBookingsByDate(date, type);
-            return ResponseEntity.ok(bookings);
+            return ResponseEntity.ok(new ApiResponse<>("Bookings fetched by date", true, bookings));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+            return ResponseEntity.badRequest().body(new ApiResponse<>("Error: " + e.getMessage(), false, null));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Unexpected error: " + e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>("Unexpected error: " + e.getMessage(), false, null));
         }
     }
 
     @GetMapping("/check-availability")
-    public ResponseEntity<?> checkRoomAvailability(
+    public ResponseEntity<ApiResponse<String>> checkRoomAvailability(
             @RequestParam("roomId") String roomId,
             @RequestParam("checkInAt") LocalDate checkInAt,
             @RequestParam("checkOutAt") LocalDate checkOutAt) {
         try {
             boolean isBooked = bookingService.isRoomBooked(roomId, checkInAt, checkOutAt);
-            return ResponseEntity.ok(isBooked ? "Phòng đã được đặt." : "Phòng còn trống.");
+            return ResponseEntity.ok(
+                    new ApiResponse<>("Check completed", true, isBooked ? "Phòng đã được đặt." : "Phòng còn trống."));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Unexpected error: " + e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>("Unexpected error: " + e.getMessage(), false, null));
         }
     }
 }

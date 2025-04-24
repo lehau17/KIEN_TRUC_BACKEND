@@ -1,23 +1,22 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsUrl, MaxLength, MinLength } from 'class-validator';
+import { ErrorValidateCode } from '@app/common';
 
 export class UpdateEmployeeDto {
-  @ApiPropertyOptional({
-    description: 'Họ và tên của nhân viên',
-    example: 'Nguyễn Văn A',
-    required: false,
-  })
-  @MinLength(3)
-  @MaxLength(50)
-  @IsOptional()
-  fullname?: string;
+    @ApiPropertyOptional({
+        description: 'Họ và tên của nhân viên',
+        example: 'Nguyễn Văn A',
+    })
+    @MinLength(3, { message: ErrorValidateCode.FULLNAME_MIN_LENGTH })
+    @MaxLength(50, { message: ErrorValidateCode.FULLNAME_MAX_LENGTH })
+    @IsOptional()
+    fullname?: string;
 
-  @ApiPropertyOptional({
-    description: 'URL ảnh đại diện của nhân viên',
-    example: 'https://example.com/avatar.jpg',
-    required: false,
-  })
-  @IsUrl()
-  @IsOptional()
-  avatar?: string;
+    @ApiPropertyOptional({
+        description: 'URL ảnh đại diện của nhân viên',
+        example: 'https://example.com/avatar.jpg',
+    })
+    @IsUrl({}, { message: ErrorValidateCode.AVATAR_URL_INVALID })
+    @IsOptional()
+    avatar?: string;
 }

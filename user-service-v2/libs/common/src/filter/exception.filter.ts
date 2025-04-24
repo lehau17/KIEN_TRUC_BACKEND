@@ -6,7 +6,7 @@ import {
     HttpStatus,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { MessageResponse, StatusCodeResponse } from '../constraint';
+import { ErrorMessages, MessageResponse, StatusCodeResponse } from '../constraint';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -16,7 +16,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         const response = ctx.getResponse<Response>();
 
         let status = HttpStatus.INTERNAL_SERVER_ERROR;
-        let message = MessageResponse.SERVER_ERROR;
+        let message: any = MessageResponse.SERVER_ERROR;
 
         if (exception instanceof HttpException) {
             status = exception.getStatus();
@@ -26,6 +26,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
                     ? exceptionResponse
                     : (exceptionResponse as any).message || message;
         }
+        if (Array.isArray(message)) {
+            message = ErrorMessages[message[0]] || message[0];
+        }
+
+        console.log("check message", message)
 
         response.status(status).json({
             success: false,

@@ -1,0 +1,334 @@
+_format_version: "3.0"
+
+
+plugins:
+  - name: rate-limiting
+    config:
+      minute: 10
+      policy: local
+
+services:
+  # --- user-service ---
+  - name: user-service
+    url: http://user-service:5000
+    routes:
+      - name: register
+        paths: ["/api/auth/register"]
+        strip_path: false
+
+      - name: login
+        paths: ["/api/auth/login"]
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: redis
+              limit_by: ip
+              redis:
+                host: redis        # hoặc IP/hostname của Redis container
+                port: 6379
+
+      - name: refresh-token
+        paths: ["/api/auth/refresh-token"]
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: redis
+              limit_by: ip
+              redis:
+                host: redis        # hoặc IP/hostname của Redis container
+                port: 6379
+
+      - name: verify-account
+        paths: ["/api/auth/verify-account"]
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: redis
+              limit_by: ip
+              redis:
+                host: redis        # hoặc IP/hostname của Redis container
+                port: 6379
+
+      - name: verify-change-password
+        paths: ["/api/auth/verify-change-password"]
+        strip_path: false
+
+      - name: change-password
+        paths: ["/api/auth/change-password"]
+        methods: ["POST"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: redis
+              limit_by: ip
+              redis:
+                host: redis        # hoặc IP/hostname của Redis container
+                port: 6379
+
+      - name: request-change-password
+        paths: ["/api/auth/request-change-password"]
+        methods: ["POST"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+          - name: rate-limiting
+            config:
+              minute: 5
+              policy: redis
+              limit_by: ip
+              redis:
+                host: redis        # hoặc IP/hostname của Redis container
+                port: 6379
+
+
+
+      - name: get-employees
+        paths: ["/api/employees"]
+        methods: ["GET"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: get-me
+        paths: ["/api/employees/me"]
+        methods: ["GET"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: update-me
+        paths: ["/api/employees/me"]
+        methods: ["PATCH"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: update-employee
+        paths: ["~/api/employees/\\d+$"]
+        methods: ["PATCH"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: delete-me
+        paths: ["/api/employees/me"]
+        methods: ["DELETE"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: delete-employee
+        paths: ["~/api/employees/\\d+$"]
+        methods: ["DELETE"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+  # --- room-service ---
+  - name: room-service
+    url: http://room-service:5001
+    routes:
+      - name: get-room-list
+        paths: ["/api/room$", "/api/room"]
+        methods: ["GET"]
+        strip_path: false
+
+
+      - name: create-room
+        paths: ["/api/room$", "/api/room"]
+        methods: ["POST"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: get-room-by-id
+        paths: ["~/api/room/[^/]+$"]
+        methods: ["GET"]
+        strip_path: false
+
+      - name: update-room
+        paths: ["~/api/room/[^/]+$"]
+        methods: ["PUT"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: delete-room
+        paths: ["~/api/room/[^/]+$"]
+        methods: ["DELETE"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: update-room-status
+        paths: ["~/api/room/[^/]+/status$"]
+        methods: ["PUT"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: get-rooms-by-status
+        paths: ["~/api/room/status/[^/]+$"]
+        methods: ["GET"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+  # --- booking-service ---
+  - name: booking-service
+    url: http://booking-service:8080
+    routes:
+      - name: create-booking
+        paths: ["/api/bookings$", "/api/bookings"]
+        methods: ["POST"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: get-bookings
+        paths: ["/api/bookings$", "/api/bookings"]
+        methods: ["GET"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: get-bookings-paged
+        paths: ["/api/bookings/paged"]
+        methods: ["GET"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: confirm-booking
+        paths: ["~/api/bookings/[^/]+/confirm$"]
+        methods: ["PUT"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: cancel-booking
+        paths: ["~/api/bookings/[^/]+/cancel$"]
+        methods: ["PUT"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: checkin-booking
+        paths: ["~/api/bookings/[^/]+/checkin$"]
+        methods: ["PUT"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: checkout-booking
+        paths: ["~/api/bookings/[^/]+/checkout$"]
+        methods: ["PUT"]
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 10
+              limit_by: consumer
+              policy: local
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: get-bookings-by-date
+        paths: ["/api/bookings/by-date"]
+        methods: ["GET"]
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 10
+              limit_by: consumer
+              policy: local
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: check-room-availability
+        paths: ["/api/bookings/check-availability"]
+        methods: ["GET"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+  # --- invoice-service ---
+  - name: invoice-service
+    url: http://invoice-service:7000
+    routes:
+      - name: get-invoices
+        paths: ["/api/invoices$"]
+        methods: ["GET"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: get-invoice-by-id
+        paths: ["~/api/invoices/[^/]+$"]
+        methods: ["GET"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+consumers:
+  - username: api-user
+    jwt_secrets:
+      - key: my-key
+        algorithm: HS256
+        secret: sndkjbvfskdvfhjsvdfjhvsdjfhvsdkjfhvsjdhfvskdhvfkjshvdfhjk

@@ -115,3 +115,76 @@ export const StatusCodeResponse: Record<string, number> = {
     // common
     [MessageResponse.SUCCESS]: 9000,
 };
+
+export enum ErrorValidateCode {
+    USERNAME_REQUIRED = 'V_E_100001',
+    FULLNAME_REQUIRED = 'V_E_100002',
+    FULLNAME_MIN_LENGTH = 'V_E_100008',
+    FULLNAME_MAX_LENGTH = 'V_E_100009',
+    PASSWORD_REQUIRED = 'V_E_100003',
+    PASSWORD_MIN_LENGTH = 'V_E_100004',
+    PASSWORD_FORMAT = 'V_E_100005',
+    EMAIL_REQUIRED = 'V_E_100006',
+    EMAIL_INVALID = 'V_E_100007',
+    AVATAR_URL_INVALID = 'V_E_100010',
+
+    OLD_PASSWORD_REQUIRED = 'V_E_300001',
+    OLD_PASSWORD_FORMAT = 'V_E_300002',
+    NEW_PASSWORD_REQUIRED = 'V_E_300003',
+    NEW_PASSWORD_FORMAT = 'V_E_300004',
+    CONFIRM_NEW_PASSWORD_REQUIRED = 'V_E_300005',
+    CONFIRM_NEW_PASSWORD_FORMAT = 'V_E_300006',
+}
+
+
+
+export const ErrorMessages = {
+    [ErrorValidateCode.USERNAME_REQUIRED]: {
+        username: 'Username không được để trống',
+    },
+    [ErrorValidateCode.FULLNAME_REQUIRED]: {
+        fullname: 'Họ và tên không được để trống',
+    },
+    [ErrorValidateCode.FULLNAME_MIN_LENGTH]: {
+        fullname: 'Họ và tên phải có ít nhất 3 ký tự',
+    },
+    [ErrorValidateCode.FULLNAME_MAX_LENGTH]: {
+        fullname: 'Họ và tên không được vượt quá 50 ký tự',
+    },
+    [ErrorValidateCode.PASSWORD_REQUIRED]: {
+        password: 'Mật khẩu không được để trống',
+    },
+    [ErrorValidateCode.PASSWORD_MIN_LENGTH]: {
+        password: 'Mật khẩu phải có ít nhất 6 ký tự',
+    },
+    [ErrorValidateCode.PASSWORD_FORMAT]: {
+        password: 'Mật khẩu phải có ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt',
+    },
+    [ErrorValidateCode.EMAIL_REQUIRED]: {
+        email: 'Email không được để trống',
+    },
+    [ErrorValidateCode.EMAIL_INVALID]: {
+        email: 'Email không hợp lệ',
+    },
+    [ErrorValidateCode.AVATAR_URL_INVALID]: {
+        avatar: 'Đường dẫn ảnh đại diện không hợp lệ',
+    },
+    [ErrorValidateCode.OLD_PASSWORD_REQUIRED]: {
+        oldPassword: 'Mật khẩu cũ không được để trống',
+    },
+    [ErrorValidateCode.OLD_PASSWORD_FORMAT]: {
+        oldPassword: 'Mật khẩu cũ phải có ít nhất 1 chữ hoa, 1 số và 1 ký tự đặc biệt',
+    },
+    [ErrorValidateCode.NEW_PASSWORD_REQUIRED]: {
+        newPassword: 'Mật khẩu mới không được để trống',
+    },
+    [ErrorValidateCode.NEW_PASSWORD_FORMAT]: {
+        newPassword: 'Mật khẩu mới phải có ít nhất 1 chữ hoa, 1 số và 1 ký tự đặc biệt',
+    },
+    [ErrorValidateCode.CONFIRM_NEW_PASSWORD_REQUIRED]: {
+        confirmNewPassword: 'Vui lòng xác nhận mật khẩu mới',
+    },
+    [ErrorValidateCode.CONFIRM_NEW_PASSWORD_FORMAT]: {
+        confirmNewPassword: 'Xác nhận mật khẩu phải đúng định dạng',
+    },
+};

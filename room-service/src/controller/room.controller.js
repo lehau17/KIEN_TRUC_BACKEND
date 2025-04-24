@@ -1,13 +1,14 @@
 const { ObjectIdSchema } = require("../schemas/objectID.schema");
 const { RoomSchema, RoomUpdateSchema } = require("../schemas/room.schema");
 const RoomService = require("../service/room.service");
+const { SuccessResponse, CreatedResponse } = require("../utils/response");
 
 class RoomController {
     // 📌 Lấy danh sách tất cả các phòng
     static async layDanhSachTatCaPhong(req, res, next) {
         const filters = req.query; // Lọc theo query params nếu có
         const rooms = await RoomService.layDanhSachTatCaPhong(filters);
-        res.status(200).json(rooms);
+        new SuccessResponse(rooms, "Lấy danh sách phòng thành công.").response(res);
 
     }
 
@@ -16,14 +17,16 @@ class RoomController {
         const { roomId } = req.params;
         ObjectIdSchema.parse(roomId);
         const room = await RoomService.layPhongTheoID(roomId);
-        res.status(200).json(room);
+        new SuccessResponse(room, "Lấy danh sách phòng thành công.").response(res);
+
     }
 
     // 📌 Tạo một phòng mới
     static async taoMotPhongMoi(req, res, next) {
         RoomSchema.parse(req.body);
         const newRoom = await RoomService.taoMotPhongMoi(req.body);
-        res.status(201).json(newRoom);
+        new CreatedResponse(newRoom, "Tạo phòng thành công.").response(res);
+
 
     }
 
@@ -35,7 +38,8 @@ class RoomController {
         ObjectIdSchema.parse(roomId);
         RoomUpdateSchema.parse(req.body);
         const updatedRoom = await RoomService.capNhatPhong(roomId, req.body);
-        res.status(200).json(updatedRoom);
+        new SuccessResponse(updatedRoom, "Cập nhật phòng thành cộng.").response(res);
+
     }
 
     // 📌 Xóa phòng (chuyển trạng thái isActive thành false)
@@ -43,7 +47,9 @@ class RoomController {
         const { roomId } = req.params;
         ObjectIdSchema.parse(roomId);
         const deletedRoom = await RoomService.xoaPhong(roomId);
-        res.status(200).json(deletedRoom);
+        new SuccessResponse(deletedRoom, "Xoá phòng thành cộng.").response(res);
+
+        // res.status(200).json(deletedRoom);
     }
 
 
@@ -53,14 +59,17 @@ class RoomController {
         ObjectIdSchema.parse(roomId);
         const { status } = req.body; // Trạng thái mới của phòng
         const updatedRoom = await RoomService.capNhatTrangThaiPhong(roomId, status);
-        res.status(200).json(updatedRoom);
+        new SuccessResponse(updatedRoom, "Đã thay đổi trạng thái phòng.").response(res);
+
+        // res.status(200).json(updatedRoom);
     }
 
     // 📌 Lấy danh sách phòng theo trạng thái
     static async layDanhSachPhongTheoTrangThai(req, res, next) {
         const { status } = req.params;
         const rooms = await RoomService.layDanhSachPhongTheoTrangThai(status);
-        res.status(200).json(rooms);
+        new SuccessResponse(rooms, "Lấy danh sách phòng thành cộng.").response(res);
+        // res.status(200).json(rooms);
     }
 }
 

@@ -1,4 +1,5 @@
 import { Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { Redis } from "ioredis";
 
 export class DistributeCache {
@@ -6,10 +7,11 @@ export class DistributeCache {
     private readonly logger: Logger = new Logger(DistributeCache.name);
     private redisCache: Redis;
 
-    private constructor() {
+    private constructor(private readonly configService: ConfigService) {
         try {
             this.redisCache = new Redis({
-                host: "127.0.0.1",
+                host: this.configService.get<string>("REDIS_HOST") || "redis",
+                port: this.configService.get<number>("REDIS_PORT") || 6379,
                 password: "",
                 db: 0,
             });
@@ -22,7 +24,7 @@ export class DistributeCache {
 
     static getInstance(): DistributeCache {
         if (!this.instance) {
-            this.instance = new DistributeCache();
+            this.instance = new DistributeCache(new ConfigService());
         }
         return this.instance;
     }

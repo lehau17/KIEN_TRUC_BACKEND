@@ -1,4 +1,8 @@
+version: "3.8"
 
+networks:
+  tyk-network:
+    driver: bridge
 
 services:
   rabbitmq:
@@ -11,28 +15,92 @@ services:
       - 5672:5672
       - 15672:15672
     networks:
-      - node-networks
-  # postgres:
-  #   image: postgres:latest
-  #   container_name: postgres-quan-ly-nhan-su
-  #   volumes:
-  #     - ./data/data_db:/var/lib/postgresql/data
-  #   restart: always
-  #   environment:
-  #     POSTGRES_USER: admin
-  #     POSTGRES_PASSWORD: admin1234
-  #     POSTGRES_DB: user_service
-  #   ports:
-  #     - '5432:5432'
-  #   networks:
-  #     - node-networks
-  #   healthcheck:
-  #     test: ['CMD-SHELL', 'pg_isready -U admin -d user_service']
-  #     interval: 10s
-  #     retries: 5
-  #     start_period: 10s
+      - tyk-network
 
+  redis:
+    image: redis:6
+    container_name: redis
+    networks:
+      - tyk-network
+    ports:
+      - "6379:6379"
 
-networks:
-  node-networks:
-   driver: bridge
+  tyk-gateway:
+    image: tykio/tyk-gateway:latest
+    platform: linux/amd64
+    container_name: tyk-gateway
+    networks:
+      - tyk-network
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./tyk-gateway/tyk.conf:/opt/tyk-gateway/tyk.conf
+      - ./tyk-gateway/apps:/opt/tyk-gateway/apps
+    environment:
+      TYK_GW_SECRET: "352d20ee67be67f6340b4c0605b044b7"
+    depends_on:
+      - redis
+      - user-service
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    volumes:
+      - ./data/data_db:/var/lib/postgresql/data
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin1234
+      POSTGRES_DB: user_service
+    ports:
+      - '5432:5432'
+    networks:
+      - tyk-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U admin -d user_service']
+      interval: 10s
+      retries: 5
+      start_period: 10s
+
+  user-service:
+    container_name: user-service
+    build: ./user-service-v2
+    ports:
+      - '5000:5000'
+    networks:
+      - tyk-network
+    environment:
+      DATABASE_URL: 'postgresql://admin:admin1234@postgres:5432/user_service?schema=public'
+      JWT_ACCESS_TOKEN_SECRET: 'mysecretkey'
+      JWT_REFRESH_TOKEN_SECRET: 'jwt_refresh_token'
+      JWT_ACCESS_TOKEN_EXPIRES: '15m'
+      JWT_REFRESH_TOKEN_EXPIRES: '7d'
+      LIMIT_GLOBAL: '10'
+      PORT: '5000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  room-service:
+    container_name: room-service
+    build: ./room-service
+    ports:
+      - '5001:5001'
+    networks:
+      - tyk-network
+    environment:
+      MONGO_URI: 'mongodb://mongo:27017/room-service'
+    depends_on:
+      - mongo
+
+  # Thêm MongoDB service
+  mongo:
+    container_name: mongo
+    image: mongo:latest
+    networks:
+      - tyk-network
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/mongo:/data/db
+    restart: always

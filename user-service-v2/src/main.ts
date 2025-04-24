@@ -1,6 +1,7 @@
 import { GlobalExceptionFilter } from '@app/common/filter/exception.filter';
 import { AccessTokenGuard } from '@app/common/guard/accessToken.guard';
 import { BlackListGuard } from '@app/common/guard/blacklist.guard';
+import { CheckRoleGuard } from '@app/common/guard/checkRole.guard';
 import { GlobalRateLimiter } from '@app/common/guard/rateLimiter.global';
 import { GlobalInterceptor } from '@app/common/interceptor/Globa.interceptor';
 import { ValidationPipe } from '@nestjs/common';
@@ -9,7 +10,7 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { CheckRoleGuard } from '@app/common/guard/checkRole.guard';
+import { PrismaService } from './prisma/prisma.service';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);

@@ -1,3 +1,4 @@
+import { ErrorValidateCode } from '@app/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
 
@@ -7,12 +8,12 @@ export class CreateEmployeeDto {
         description: 'Tên đăng nhập của nhân viên',
     })
     @IsString()
-    @IsNotEmpty({ message: 'Username không được để trống' })
+    @IsNotEmpty({ message: ErrorValidateCode.USERNAME_REQUIRED })
     username: string;
 
     @ApiProperty({ example: 'John Doe', description: 'Họ và tên đầy đủ' })
     @IsString()
-    @IsNotEmpty({ message: 'Họ và tên không được để trống' })
+    @IsNotEmpty({ message: ErrorValidateCode.FULLNAME_REQUIRED })
     fullname: string;
 
     @ApiProperty({
@@ -22,11 +23,10 @@ export class CreateEmployeeDto {
         minLength: 6,
     })
     @IsString()
-    @IsNotEmpty({ message: 'Mật khẩu không được để trống' })
-    @MinLength(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự' })
+    @IsNotEmpty({ message: ErrorValidateCode.PASSWORD_REQUIRED })
+    @MinLength(6, { message: ErrorValidateCode.PASSWORD_MIN_LENGTH })
     @Matches(/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/, {
-        message:
-            'Mật khẩu phải có ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt',
+        message: ErrorValidateCode.PASSWORD_FORMAT,
     })
     password: string;
 
@@ -34,11 +34,10 @@ export class CreateEmployeeDto {
         example: 'john.doe@example.com',
         description: 'Email của nhân viên',
     })
-    @IsEmail({}, { message: 'Email không hợp lệ' })
-    @IsNotEmpty({ message: 'Email không được để trống' })
+    @IsEmail({}, { message: ErrorValidateCode.EMAIL_INVALID })
+
+    @IsNotEmpty({
+        message: ErrorValidateCode.EMAIL_REQUIRED
+    })
     email: string;
-
-
-
-
 }

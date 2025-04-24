@@ -8,6 +8,6 @@ const mainRouter = express.Router();
 mainRouter.use("/auth", authRouter);
 
 // invoice
-mainRouter.use("/invoices", invoiceRoutes);
+mainRouter.use("/api/invoices", invoiceRoutes);
 
 export default mainRouter;
