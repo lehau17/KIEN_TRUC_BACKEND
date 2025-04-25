@@ -63,6 +63,22 @@ class ReviewService {
 
         return review;
     }
+
+
+    static async capNhatReview(reviewId, userId, updateData) {
+        const review = await Review.findOne({ _id: reviewId, userId });
+        if (!review) throw new ErrorWithStatus("Không tìm thấy hoặc không có quyền cập nhật!", 403);
+
+        if (updateData.comment !== undefined) review.comment = updateData.comment;
+        if (updateData.rating !== undefined) review.rating = updateData.rating;
+
+        await review.save();
+
+        // Xoá cache liên quan
+        await redis.del(`reviews:room:${review.roomId}`);
+
+        return review;
+    }
 }
 
 module.exports = ReviewService;
