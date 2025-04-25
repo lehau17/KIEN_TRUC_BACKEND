@@ -1,5 +1,6 @@
 const express = require('express');
 const { invoiceRateLimiter } = require('../config/rateLimiter');
+const { rateLimiterServer } = require('../config/rateLimiterServer');
 
 const router = express.Router();
 
@@ -8,7 +9,7 @@ const invoiceController = require('../controllers/invoiceController');
 // 📌 Lấy danh sách tất cả hóa đơn (Áp dụng Rate Limiter)
 router.get('/', invoiceRateLimiter, invoiceController.getInvoices);
 
-router.get('/bookings', invoiceController.getBookings);
+router.get('/bookings', rateLimiterServer,invoiceRateLimiter, invoiceController.getBookings);
 // 📌 Lấy chi tiết hóa đơn theo ID (Áp dụng Rate Limiter)
 router.get('/:id', invoiceRateLimiter, invoiceController.getInvoice);
 
