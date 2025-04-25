@@ -2,12 +2,14 @@
 const ReviewService = require("../service/review.service");
 const { ObjectIdSchema } = require("../schemas/objectID.schema");
 const { SuccessResponse, CreatedResponse } = require("../utils/response");
+const { ReviewSchema } = require("../schemas/review.schema");
 
 class ReviewController {
     // 📌 Tạo review
     static async taoReview(req, res, next) {
+        ReviewSchema.parse(req.body)
         const { roomId, comment, rating } = req.body;
-        const userId = req.user.id; // Giả sử bạn dùng middleware auth
+        const userId = req.user.id; // lay tu token
         const review = await ReviewService.taoReview({ roomId, userId, comment, rating });
         new CreatedResponse(review, "Đánh giá đã được tạo.").response(res);
     }
