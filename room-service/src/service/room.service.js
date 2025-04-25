@@ -163,9 +163,22 @@ class RoomService {
 
 
     static async layDanhSachPhongTheoTrangThai(status) {
-        const key = `rooms:byStatus:${status}`;
-        return await getOrSetCache(key, async () => {
-            return await RoomRepository.layDanhSachPhongTheoTrangThai(status);
+        const cacheKey = `rooms:byStatus:${status}`;
+        const lockKey = `lock:${cacheKey}`;
+
+        return await getOrSetCache(cacheKey, async () => {
+            const lockValue = await yeuCauKhoa(lockKey, 5000, 2000, 100); // TTL: 5s, timeout: 2s, retry: 100ms
+
+            if (!lockValue) {
+                console.warn(`⚠️ Không lấy được lock khi lấy danh sách phòng theo trạng thái '${status}'`);
+                return null; // hoặc throw nếu muốn fail
+            }
+
+            try {
+                return await RoomRepository.layDanhSachPhongTheoTrangThai(status);
+            } finally {
+                await moKhoa(lockKey, lockValue);
+            }
         }, 300); // Cache 5 phút
     }
 
