@@ -2,6 +2,7 @@ const invoiceRepository = require('../repository/invoiceRepository');
 const Invoice = require('../models/invoiceModel');
 const { bookingDataSchema } = require('../validators/invoiceValidator');
 const redisClient = require('../config/redisClient');
+const { wrapWithBreaker } = require('../config/circuitBreaker');
 
 const CACHE_TTL = 10; // cache thời gian 5 phút
 
@@ -76,7 +77,7 @@ const updateInvoice = async (bookingData) => {
 };
 
 // ✅ Lấy tất cả hóa đơn (có cache)
-const fetchAllInvoices = async () => {
+const fetchAllInvoices = wrapWithBreaker(async () => {
     const cacheKey = `invoice:all`;
     const cached = await redisClient.get(cacheKey);
     if (cached) {
@@ -87,10 +88,11 @@ const fetchAllInvoices = async () => {
     const invoices = await invoiceRepository.getAllInvoices();
     await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(invoices));
     return invoices;
-};
+}, 'fetchAllInvoices');
+
 
 // ✅ Lấy hóa đơn theo ID (có cache)
-const fetchInvoiceById = async (id) => {
+const fetchInvoiceById = wrapWithBreaker(async (id) => {
     const cacheKey = `invoice:${id}`;
     const cached = await redisClient.get(cacheKey);
     if (cached) {
@@ -104,10 +106,11 @@ const fetchInvoiceById = async (id) => {
     }
 
     return invoice;
-};
+}, 'fetchInvoiceById');
+
 
 // ✅ Xuất HTML hóa đơn (có cache)
-const exportInvoiceHTML = async (id) => {
+const exportInvoiceHTML = wrapWithBreaker(async (id) => {
     const cacheKey = `invoice:export:${id}`;
     const cached = await redisClient.get(cacheKey);
     if (cached) {
@@ -134,7 +137,8 @@ const exportInvoiceHTML = async (id) => {
 
     await redisClient.setEx(cacheKey, CACHE_TTL, html);
     return html;
-};
+}, 'exportInvoiceHTML');
+
 
 // ✅ Tạo hóa đơn mới
 const createInvoice = async (invoiceData) => {
@@ -168,11 +172,29 @@ const createInvoice = async (invoiceData) => {
     }
 };
 
+// ✅ Lấy danh sách hóa đơn theo userId (có cache)
+const fetchInvoicesByUserId = wrapWithBreaker(async (userId) => {
+    const cacheKey = `invoice:user:${userId}`;
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+        console.log(`🔁 Cache hit for ${cacheKey}`);
+        return JSON.parse(cached);
+    }
+
+    const invoices = await invoiceRepository.getInvoicesByUserId(userId);
+    if (invoices) {
+        await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(invoices));
+    }
+
+    return invoices;
+}, 'fetchInvoicesByUserId');
+
 module.exports = {
     processBookingPayment,
     updateInvoice,
     fetchAllInvoices,
     fetchInvoiceById,
     exportInvoiceHTML,
-    createInvoice
+    createInvoice,
+    fetchInvoicesByUserId
 };

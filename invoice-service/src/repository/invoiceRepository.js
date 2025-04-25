@@ -25,8 +25,17 @@ const getAllInvoices = async () => {
     }
 };
 
+const getInvoicesByUserId = async (userId) => {
+    try {
+        return await Invoice.find({ userId });
+    } catch (error) {
+        throw new Error('Error fetching invoices for user: ' + error.message);
+    }
+};
+
 module.exports = {
     createInvoice,
     getInvoiceById,
-    getAllInvoices
+    getAllInvoices,
+    getInvoicesByUserId
 };

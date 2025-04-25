@@ -44,10 +44,25 @@ const createInvoice = async (req, res) => {
     }
 };
 
+const getInvoicesByUser = async (req, res) => {
+    try {
+        const { userId } = req.params; // Lấy userId từ params
+        const invoices = await invoiceService.fetchInvoicesByUserId(userId);
+
+        if (!invoices || invoices.length === 0) {
+            return res.status(404).json({ message: 'No invoices found for this user' });
+        }
+
+        res.status(200).json(invoices);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 
 module.exports = {
     getInvoices,
     getInvoice,
     exportInvoice,
-    createInvoice
+    createInvoice,
+    getInvoicesByUser
 };
