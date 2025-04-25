@@ -1,4 +1,4 @@
-const { yeuCauKhoa } = require("../config/redis.config");
+const { yeuCauKhoa, moKhoa } = require("../config/redis.config");
 const RoomRepository = require("../repository/room.repository");
 const { getOrSetCache } = require("../utils/cache.util");
 const ErrorWithStatus = require("../utils/errorWithStatus.util");
@@ -86,12 +86,24 @@ class RoomService {
     }
 
     static async layPhongTheoID(roomId) {
-        const key = `room:detail:${roomId}`;
+        const cacheKey = `room:detail:${roomId}`;
+        const lockKey = `lock:${cacheKey}`;
 
-        return await getOrSetCache(key, async () => {
-            const room = await RoomRepository.layPhongTheoID(roomId);
-            if (!room) throw new ErrorWithStatus("Không tìm thấy phòng!", 400);
-            return room;
+        return await getOrSetCache(cacheKey, async () => {
+            const lockValue = await yeuCauKhoa(lockKey, 5000, 2000, 100); // TTL=5s, timeout=2s
+
+            if (!lockValue) {
+                console.warn(`⚠️ Không lấy được lock khi lấy phòng ${roomId}`);
+                return null;
+            }
+
+            try {
+                const room = await RoomRepository.layPhongTheoID(roomId);
+                if (!room) throw new ErrorWithStatus("Không tìm thấy phòng!", 400);
+                return room;
+            } finally {
+                await moKhoa(lockKey, lockValue);
+            }
         }, 300); // Cache 5 phút
     }
 
