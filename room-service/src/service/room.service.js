@@ -1,96 +1,83 @@
 const RoomRepository = require("../repository/room.repository");
+const { getOrSetCache } = require("../utils/cache.util");
 const ErrorWithStatus = require("../utils/errorWithStatus.util");
-
+const crypto = require("crypto");
 class RoomService {
-    static async layDanhSachTatCaPhong({
-        name,
-        to_price,
-        from_price = 0,
-        isAvailable,
-        roomType,
-        status,
-        from_rating,
-        to_rating,
-        isActive,
-        sortBy = "createdAt",
-        sortOrder = "desc",
-        page = 1,
-        limit = 10
-    }) {
-        const filter = {};
+    static async layDanhSachTatCaPhong(params) {
+        const key = `rooms:list:${crypto.createHash('md5').update(JSON.stringify(params)).digest('hex')}`;
+        return await getOrSetCache(key, async () => {
+            const filter = {};
+            const {
+                name,
+                to_price,
+                from_price = 0,
+                isAvailable,
+                roomType,
+                status,
+                from_rating,
+                to_rating,
+                isActive,
+                sortBy = "createdAt",
+                sortOrder = "desc",
+                page = 1,
+                limit = 10
+            } = params;
 
-        // Filter name
-        if (name) {
-            filter.name = { $regex: name, $options: "i" };
-        }
-
-        // Filter price
-        filter.price = { $gte: from_price };
-        if (to_price) {
-            filter.price.$lte = to_price;
-        }
-
-        // isAvailable
-        if (typeof isAvailable === "boolean") {
-            filter.isAvailable = isAvailable;
-        }
-
-        // roomType
-        const validRoomTypes = ["Standard", "Deluxe", "Suite"];
-        if (roomType && validRoomTypes.includes(roomType)) {
-            filter.roomType = roomType;
-        }
-
-        // status
-        const validStatus = ["available", "booked", "maintenance"];
-        if (status && validStatus.includes(status)) {
-            filter.status = status;
-        }
-
-        // rating
-        if (from_rating || to_rating) {
-            filter.rating = {};
-            if (from_rating) filter.rating.$gte = from_rating;
-            if (to_rating) filter.rating.$lte = to_rating;
-        }
-
-        // isActive
-        if (typeof isActive === "boolean") {
-            filter.isActive = isActive;
-        }
-
-        // Sort
-        const sort = {};
-        if (sortBy) {
-            sort[sortBy] = sortOrder === "asc" ? 1 : -1;
-        }
-
-        // Pagination
-        const skip = (page - 1) * limit;
-
-        // Chạy song song
-        const [total, rooms] = await Promise.all([
-            RoomRepository.demSoLuong(filter),
-            RoomRepository.layDanhSachTatCaPhong(filter, sort, skip, limit)
-        ]);
-
-        return {
-            data: rooms,
-            pagination: {
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit)
+            if (name) {
+                filter.name = { $regex: name, $options: "i" };
             }
-        };
+            filter.price = { $gte: from_price };
+            if (to_price) filter.price.$lte = to_price;
+
+            if (typeof isAvailable === "boolean") filter.isAvailable = isAvailable;
+
+            const validRoomTypes = ["Standard", "Deluxe", "Suite"];
+            if (roomType && validRoomTypes.includes(roomType)) filter.roomType = roomType;
+
+            const validStatus = ["available", "booked", "maintenance"];
+            if (status && validStatus.includes(status)) filter.status = status;
+
+            if (from_rating || to_rating) {
+                filter.rating = {};
+                if (from_rating) filter.rating.$gte = from_rating;
+                if (to_rating) filter.rating.$lte = to_rating;
+            }
+
+            if (typeof isActive === "boolean") filter.isActive = isActive;
+
+            const sort = {};
+            if (sortBy) sort[sortBy] = sortOrder === "asc" ? 1 : -1;
+
+            const skip = (page - 1) * limit;
+
+            const [total, rooms] = await Promise.all([
+                RoomRepository.demSoLuong(filter),
+                RoomRepository.layDanhSachTatCaPhong(filter, sort, skip, limit)
+            ]);
+
+            return {
+                data: rooms,
+                pagination: {
+                    total,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(total / limit)
+                }
+            };
+        }, 300);
     }
 
 
 
+
     static async layPhongTheoID(roomId) {
-        const room = await RoomRepository.layPhongTheoID(roomId);
-        if (!room) throw new ErrorWithStatus("Không tìm thấy phòng!", 400);
-        return room;
+        const key = `room:detail:${roomId}`;
+
+        return await getOrSetCache(key, async () => {
+            const room = await RoomRepository.layPhongTheoID(roomId);
+            if (!room) throw new ErrorWithStatus("Không tìm thấy phòng!", 400);
+            return room;
+        }, 300); // Cache 5 phút
     }
 
     static async taoMotPhongMoi(roomData) {
