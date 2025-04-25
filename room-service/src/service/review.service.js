@@ -2,6 +2,7 @@ const Review = require("../model/review.model");
 const ErrorWithStatus = require("../utils/errorWithStatus.util");
 const { redis, yeuCauKhoa, moKhoa } = require("../config/redis.config");
 const { getOrSetCache } = require("../utils/cache.util");
+const { safeGetUser } = require("./userAPI.service");
 
 class ReviewService {
     static async taoReview({ roomId, userId, comment, rating }) {
@@ -41,9 +42,20 @@ class ReviewService {
             }
 
             try {
-                return await Review.find({ roomId })
-                    // .populate("userId", "name email") // mở nếu cần
-                    .sort({ createdAt: -1 });
+                const reviews = await Review.find({ roomId }).sort({ createdAt: -1 });
+
+                // Gọi user-service để lấy thông tin user
+                const enrichedReviews = await Promise.all(
+                    reviews.map(async (review) => {
+                        const userInfo = await safeGetUser(review.userId);
+                        return {
+                            ...review.toObject(),
+                            user: userInfo,
+                        };
+                    })
+                );
+
+                return enrichedReviews;
             } finally {
                 await moKhoa(lockKey, lockValue);
             }
