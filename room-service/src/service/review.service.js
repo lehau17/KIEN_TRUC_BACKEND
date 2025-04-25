@@ -15,7 +15,7 @@ class ReviewService {
 
     static async layDanhSachReviewTheoPhong(roomId) {
         return await Review.find({ roomId })
-            .populate("userId", "name email")
+            // .populate("userId", "name email")
             .sort({ createdAt: -1 });
     }
 

@@ -36,3 +36,5 @@
 
 
 # rate limiter : gioi han truy cap nguoi dung trong 1 khoan thoi gian
+# rate limiter trả lỗi : 429
+# time limiter trả lỗi : 503
