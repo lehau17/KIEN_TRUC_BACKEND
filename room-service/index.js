@@ -3,12 +3,15 @@ const { ketNoiDatabase } = require("./src/config")
 const mainRouter = require("./src/router")
 const { ZodError } = require("zod")
 const { errorMessages, detailedErrorMessages } = require("./src/utils/errorValidateCode")
+const limiter = require("./src/middlewares/rate_limiter.middleware")
 require('dotenv').config()
 
 const app = express()
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+
+app.use(limiter)
 app.use((req, res, next) => {
     console.log("Received request:", req.method, req.path);
     next();

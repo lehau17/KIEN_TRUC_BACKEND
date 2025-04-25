@@ -33,3 +33,6 @@
 
 # locking bang redis
 # cap 1 cai khoa duy nhat
+
+
+# rate limiter : gioi han truy cap nguoi dung trong 1 khoan thoi gian
