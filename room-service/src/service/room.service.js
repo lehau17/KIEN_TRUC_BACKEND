@@ -118,16 +118,30 @@ class RoomService {
             throw new ErrorWithStatus("Trạng thái không hợp lệ!");
         }
 
-        let isAvailable = status === "available";
+        const isAvailable = status === "available";
 
         const updatedRoom = await RoomRepository.capNhatTrangThaiPhong(roomId, status, isAvailable);
         if (!updatedRoom) throw new ErrorWithStatus("Không tìm thấy phòng để cập nhật trạng thái!");
+
+        // 🧹 Xoá cache
+        await redis.del(`room:detail:${roomId}`);
+        const keys = await redis.keys("rooms:list:*");
+        if (keys.length) await redis.del(...keys);
+        await redis.del(`rooms:byStatus:available`);
+        await redis.del(`rooms:byStatus:booked`);
+        await redis.del(`rooms:byStatus:maintenance`);
+
         return updatedRoom;
     }
 
+
     static async layDanhSachPhongTheoTrangThai(status) {
-        return await RoomRepository.layDanhSachPhongTheoTrangThai(status);
+        const key = `rooms:byStatus:${status}`;
+        return await getOrSetCache(key, async () => {
+            return await RoomRepository.layDanhSachPhongTheoTrangThai(status);
+        }, 300); // Cache 5 phút
     }
+
 }
 
 module.exports = RoomService;
