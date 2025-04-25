@@ -55,7 +55,7 @@ export class PublicThrottlerGuard extends ThrottlerGuard {
         }
 
         const ttl = await this.redis.ttl(key);
-        await this.redis.setex(key, ttl > 0 ? ttl : 60, +rateLimitPublic + 1 || 1);
+        await this.redis.setex(key, ttl > 0 ? ttl : 10, +rateLimitPublic + 1 || 1);
         return true;
     }
 }
