@@ -97,6 +97,12 @@ class RoomService {
     static async capNhatPhong(roomId, updateData) {
         const room = await RoomRepository.capNhatPhong(roomId, updateData);
         if (!room) throw new ErrorWithStatus("Không tìm thấy phòng để cập nhật!", 400);
+
+        // 🔥 Xoá cache liên quan
+        await redis.del(`room:detail:${roomId}`);       // Cache chi tiết phòng
+        const keys = await redis.keys("rooms:list:*");  // Cache danh sách phòng
+        if (keys.length) await redis.del(...keys);
+
         return room;
     }
 
