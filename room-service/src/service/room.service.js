@@ -84,7 +84,14 @@ class RoomService {
         if (!roomData.name || !roomData.price || !roomData.capacity) {
             throw new ErrorWithStatus("Thiếu thông tin bắt buộc!", 400);
         }
-        return await RoomRepository.taoMotPhongMoi(roomData);
+
+        const room = await RoomRepository.taoMotPhongMoi(roomData);
+
+        // Xoá toàn bộ cache danh sách phòng
+        const keys = await redis.keys("rooms:list:*");
+        if (keys.length) await redis.del(...keys);
+
+        return room;
     }
 
     static async capNhatPhong(roomId, updateData) {
