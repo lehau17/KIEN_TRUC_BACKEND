@@ -48,3 +48,33 @@ export async function moKhoa(
 function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+
+
+export async function getOrSetCache<T>(
+    key: string,
+    callback: () => Promise<T>,
+    ttlSeconds: number = 300, // mặc định cache 5 phút
+): Promise<T> {
+    // 1. Thử lấy từ Redis cache trước
+    const cached = await redis.get(key);
+
+    if (cached) {
+        try {
+            return JSON.parse(cached) as T;
+        } catch (err) {
+            console.warn(`⚠️ Parse cache thất bại key=${key}`, err);
+            // Nếu lỗi parse => bỏ qua, load mới
+        }
+    }
+
+    // 2. Nếu không có cache -> gọi callback để lấy dữ liệu mới
+    const freshData = await callback();
+
+    // 3. Lưu lại vào Redis cache
+    if (freshData !== null && freshData !== undefined) {
+        await redis.set(key, JSON.stringify(freshData), 'EX', ttlSeconds);
+    }
+
+    return freshData;
+}
