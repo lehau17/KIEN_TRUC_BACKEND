@@ -59,10 +59,22 @@ const getInvoicesByUser = async (req, res) => {
     }
 };
 
+
+// 📌 Lấy danh sách tất cả booking từ Booking Service và trả về dưới dạng JSON
+const getBookings = async (req, res) => {
+    try {
+        const bookings = await invoiceService.getBookingsFromBookingService();
+        res.status(200).json(bookings);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     getInvoices,
     getInvoice,
     exportInvoice,
     createInvoice,
-    getInvoicesByUser
+    getInvoicesByUser,
+    getBookings
 };

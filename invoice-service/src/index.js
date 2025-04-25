@@ -6,12 +6,12 @@ const { listenToBookingEvents } = require('./services/eventListener');
 
 
 const app = express();
-app.use(express.json());
+
 app.use("/", mainRouter);
 
 const startServer = async () => {
     await connectDB();
-    await listenToBookingEvents();
+    //await listenToBookingEvents();
 
     
     const PORT = process.env.PORT || 5003;

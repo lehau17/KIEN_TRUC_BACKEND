@@ -3,8 +3,13 @@ const Invoice = require('../models/invoiceModel');
 const { bookingDataSchema } = require('../validators/invoiceValidator');
 const redisClient = require('../config/redisClient');
 const { wrapWithBreaker } = require('../config/circuitBreaker');
+const axios = require('axios');
+const axiosInstance = require('../config/axiosConfig');
 
 const CACHE_TTL = 10; // cache thời gian 5 phút
+
+
+
 
 // ✅ Tạo hóa đơn mới
 const processBookingPayment = async (bookingData) => {
@@ -189,6 +194,54 @@ const fetchInvoicesByUserId = wrapWithBreaker(async (userId) => {
     return invoices;
 }, 'fetchInvoicesByUserId');
 
+
+// Lấy thông tin booking từ Booking Service với retry và timeout và cache Redis
+const getBookingsFromBookingService = async () => {
+    const cacheKey = 'bookings:data';  // Cache key cho dữ liệu bookings
+    const cached = await redisClient.get(cacheKey);
+
+    if (cached) {
+        console.log(`🔁 Cache hit for ${cacheKey}`);
+        return JSON.parse(cached);  // Trả về dữ liệu từ cache
+    }
+
+    try {
+        // Gửi request đến Booking Service
+        const response = await axiosInstance.get('/api/bookings');
+        console.log('Raw response:', response.data);  // Log raw response
+
+        // Kiểm tra nếu không có data hoặc data rỗng
+        if (!response.data || !response.data.bookings || response.data.bookings.length === 0) {
+            throw new Error('No bookings data received');
+        }
+
+        // Lưu vào cache Redis
+        await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(response.data.bookings));
+
+        console.log('Bookings data:', response.data.bookings);
+        return response.data.bookings;
+    } catch (error) {
+        // Kiểm tra loại lỗi và log thông báo chi tiết
+        if (error.code === 'ECONNREFUSED') {
+            console.error('❌ Connection refused by Booking Service:', error.message);
+        } else if (error.response) {
+            // Lỗi có response từ server
+            console.error(`❌ Error fetching bookings from Booking Service: ${error.response.status} - ${error.response.statusText}`);
+        } else {
+            // Các lỗi không liên quan đến response
+            console.error('❌ Error fetching bookings from Booking Service:', error.message);
+        }
+        throw error;
+    }
+};
+
+
+
+
+
+
+
+
 module.exports = {
     processBookingPayment,
     updateInvoice,
@@ -196,5 +249,6 @@ module.exports = {
     fetchInvoiceById,
     exportInvoiceHTML,
     createInvoice,
-    fetchInvoicesByUserId
+    fetchInvoicesByUserId,
+    getBookingsFromBookingService
 };

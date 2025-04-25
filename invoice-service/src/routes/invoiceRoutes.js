@@ -8,6 +8,7 @@ const invoiceController = require('../controllers/invoiceController');
 // 📌 Lấy danh sách tất cả hóa đơn (Áp dụng Rate Limiter)
 router.get('/', invoiceRateLimiter, invoiceController.getInvoices);
 
+router.get('/bookings', invoiceController.getBookings);
 // 📌 Lấy chi tiết hóa đơn theo ID (Áp dụng Rate Limiter)
 router.get('/:id', invoiceRateLimiter, invoiceController.getInvoice);
 
@@ -19,5 +20,8 @@ router.post('/', invoiceController.createInvoice);
 
 // 📌 Lấy danh sách hóa đơn theo userId (Áp dụng Rate Limiter)
 router.get('/user/:userId', invoiceRateLimiter, invoiceController.getInvoicesByUser);
+
+
+
 
 module.exports = router;
