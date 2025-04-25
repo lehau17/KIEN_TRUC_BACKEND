@@ -77,6 +77,11 @@ services:
       JWT_REFRESH_TOKEN_EXPIRES: '7d'
       LIMIT_GLOBAL: '10'
       PORT: '5000'
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      RATE_LIMIT_PUBLIC: 3
+
     depends_on:
       postgres:
         condition: service_healthy
@@ -90,6 +95,18 @@ services:
       - tyk-network
     environment:
       MONGO_URI: 'mongodb://mongo:27017/room-service'
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      RATE_LIMIT_PUBLIC: 3
+
+
+
+      # fix
+      USER_SERVICE_URL: http://user-service:5000
+
+
+
     depends_on:
       - mongo
 
