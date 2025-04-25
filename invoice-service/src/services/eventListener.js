@@ -1,36 +1,65 @@
 const amqp = require('amqplib');
-require('dotenv').config()
-const { processBookingPayment } = require('../services/invoiceService');
+require('dotenv').config();
+const { processBookingPayment, updateInvoice } = require('./invoiceService');
+const Invoice = require('../models/invoiceModel');
+const { bookingDataSchema } = require('../validators/invoiceValidator');
 
 const listenToBookingEvents = async () => {
     try {
         const connection = await amqp.connect(process.env.RABBITMQ_URL);
         const channel = await connection.createChannel();
-        const queue = process.env.RABBITMQ_QUEUE;  // booking_queue
 
+        const exchange = 'booking.exchange';
+        const routingKey = 'CONFIRM';
+        const queue = 'confirm.queue';
+
+        await channel.assertExchange(exchange, 'topic', { durable: true });
         await channel.assertQueue(queue, { durable: true });
-        console.log(`Listening for messages on queue: ${queue}`);
+        await channel.bindQueue(queue, exchange, routingKey);
+
+        console.log(`🟢 Listening for messages on queue '${queue}' via exchange '${exchange}'`);
 
         channel.consume(queue, async (msg) => {
-            if (msg !== null) {
-                try {
-                    // Chuyển dữ liệu từ buffer sang JSON
-                    const bookingData = JSON.parse(msg.content.toString());
-                    console.log('✅ Received booking event:', bookingData);
+            console.log(`----Consume----`);
+            if (!msg) return;
 
-                    // Gửi dữ liệu sang invoiceService để xử lý
-                    await processBookingPayment(bookingData);
-
-                    // Xác nhận đã xử lý xong message
-                    channel.ack(msg);
-                } catch (error) {
-                    console.error('❌ Error processing booking event:', error);
-                    channel.nack(msg, false, false); // Không requeue message
+            try {
+                // ✅ Parse chuỗi JSON có thể bị lồng
+                let bookingData = JSON.parse(msg.content.toString());
+                if (typeof bookingData === 'string') {
+                    bookingData = JSON.parse(bookingData);
                 }
+
+                console.log("📦 bookingData typeof:", typeof bookingData);
+                console.log("📦 bookingData content:", bookingData);
+                console.log(`✅ Received [${msg.fields.routingKey}]:`, bookingData);
+
+                // ✅ Validate dữ liệu
+                const { error } = bookingDataSchema.validate(bookingData);
+                if (error) {
+                    console.warn(`⚠️ Validation error: ${error.details[0].message}`);
+                    return channel.nack(msg, false, false);
+                }
+
+                // 🔁 Check invoice đã tồn tại chưa
+                const existingInvoice = await Invoice.findOne({ bookingId: bookingData.bookingId });
+
+                if (existingInvoice) {
+                    console.log(`🔁 Invoice exists. Updating invoice for bookingId: ${bookingData.bookingId}`);
+                    await updateInvoice(bookingData);
+                } else {
+                    console.log(`🆕 No invoice found. Creating new invoice for bookingId: ${bookingData.bookingId}`);
+                    await processBookingPayment(bookingData);
+                }
+
+                channel.ack(msg);
+            } catch (err) {
+                console.error('❌ Error processing message:', err.message);
+                channel.nack(msg, false, false);
             }
         });
-    } catch (error) {
-        console.error('❌ Error setting up RabbitMQ listener:', error);
+    } catch (err) {
+        console.error('❌ Error setting up RabbitMQ listener:', err.message);
     }
 };
 
