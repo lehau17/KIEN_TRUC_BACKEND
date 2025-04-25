@@ -241,6 +241,32 @@ export class AuthService {
 
 
 
+    async logout(userId: number, jti: string): Promise<boolean> {
+        const user = await this.prismaService.users.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            throw new BadRequestException(MessageResponse.USER_NOT_FOUND);
+        }
+
+        // Cập nhật DB: xóa refresh_token
+        await this.prismaService.users.update({
+            where: { id: userId },
+            data: {
+                refresh_token: null,
+            },
+        });
+
+        // Thêm jti vào Redis blacklist (TTL bằng thời gian sống của access token)
+        await this.disCache.setTTLString(`BLACKLIST:JTI:${jti}`, 'BLACKLIST', 60 * 15); // 15 phút
+
+        return true;
+    }
+
+
+
+
 
 
     private genKeyVerifyAccount(value: string): string {
