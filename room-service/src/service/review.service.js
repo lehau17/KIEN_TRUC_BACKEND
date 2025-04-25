@@ -1,5 +1,5 @@
 // service/review.service.js
-const Review = require("../models/review.model");
+const Review = require("../model/review.model");
 const ErrorWithStatus = require("../utils/errorWithStatus.util");
 
 class ReviewService {

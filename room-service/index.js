@@ -14,6 +14,8 @@ app.use((req, res, next) => {
     next();
 });
 
+//5001
+// localhost:5001/api
 
 // router
 app.use("/api", mainRouter)

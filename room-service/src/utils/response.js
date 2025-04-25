@@ -11,14 +11,21 @@ class BaseResponse {
     }
 }
 
-export class SuccessResponse extends BaseResponse {
+ class SuccessResponse extends BaseResponse {
     constructor(data, mes = "Success") {
         super(data, 200, mes);
     }
 }
 
-export class CreatedResponse extends BaseResponse {
+ class CreatedResponse extends BaseResponse {
     constructor(data, mes = "Created") {
         super(data, 201, mes);
     }
+}
+
+
+
+module.exports = {
+    SuccessResponse, 
+    CreatedResponse
 }

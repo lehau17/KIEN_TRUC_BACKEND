@@ -1,4 +1,5 @@
 const { Room } = require("../model");
+const ErrorWithStatus = require("../utils/errorWithStatus.util");
 
 class RoomRepository {
     static async layDanhSachTatCaPhong(filter = {}, sort = {}, skip = 0, limit = 10) {
@@ -19,6 +20,9 @@ class RoomRepository {
   }
 
   static async capNhatPhong(roomId, updateData) {
+    const room = await Room.findById(roomId)
+    if(!room || room.isActive === false) 
+      throw new ErrorWithStatus("Phong khong ton tai hoac da xoa", 400)
     return await Room.findByIdAndUpdate(roomId, updateData, { new: true });
   }
 

@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+
+// co them danh gia phong 
 const ReviewSchema = new mongoose.Schema({
     roomId: { type: mongoose.Schema.Types.ObjectId, ref: "Room", required: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },

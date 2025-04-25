@@ -1,4 +1,4 @@
-const { yeuCauKhoa, moKhoa } = require("../config/redis.config");
+const { yeuCauKhoa, moKhoa, redis } = require("../config/redis.config");
 const RoomRepository = require("../repository/room.repository");
 const { getOrSetCache } = require("../utils/cache.util");
 const ErrorWithStatus = require("../utils/errorWithStatus.util");
@@ -90,16 +90,22 @@ class RoomService {
         const lockKey = `lock:${cacheKey}`;
 
         return await getOrSetCache(cacheKey, async () => {
+            // chan nguoi dung cung truy van vao 1 nguon du lieu => chi cho 1 nguoi do
+            // cap khoa cho 1 nguoi duy nhat => cho phep ho doi 2s, 
+            // moi 100 mili giay, goi ham lay khoa 1 lan
             const lockValue = await yeuCauKhoa(lockKey, 5000, 2000, 100); // TTL=5s, timeout=2s
-
+            // qua 2 giay => tra ve null
             if (!lockValue) {
                 console.warn(`⚠️ Không lấy được lock khi lấy phòng ${roomId}`);
                 return null;
             }
 
             try {
+                // lay du lieu o database
                 const room = await RoomRepository.layPhongTheoID(roomId);
-                if (!room) throw new ErrorWithStatus("Không tìm thấy phòng!", 400);
+                // neu co du lieu => tra ve
+                // khong co => bao loi
+                if (!room || room.isActive === false) throw new ErrorWithStatus("Không tìm thấy phòng!", 400);
                 return room;
             } finally {
                 await moKhoa(lockKey, lockValue);
@@ -108,14 +114,15 @@ class RoomService {
     }
 
     static async taoMotPhongMoi(roomData) {
-        if (!roomData.name || !roomData.price || !roomData.capacity) {
+        // kiem tra du lieu
+        if (roomData.name.trim() ==="" || !roomData.price || !roomData.capacity) {
             throw new ErrorWithStatus("Thiếu thông tin bắt buộc!", 400);
         }
-
-        const room = await RoomRepository.taoMotPhongMoi(roomData);
-
+        // tao phong moi
+        const room = await RoomRepository.taoMotPhongMoi({...roomData, status : "available"});
         // Xoá toàn bộ cache danh sách phòng
-        const keys = await redis.keys("rooms:list:*");
+        const keys = await redis.keys("rooms:list:́́́*");// lay tat ca cac data o redis co key bat dau bang rooms:list
+        // xoa du lieu o redis
         if (keys.length) await redis.del(...keys);
 
         return room;
@@ -123,7 +130,7 @@ class RoomService {
 
     static async capNhatPhong(roomId, updateData) {
         const room = await RoomRepository.capNhatPhong(roomId, updateData);
-        if (!room) throw new ErrorWithStatus("Không tìm thấy phòng để cập nhật!", 400);
+        if (!room || room.isActive ===false) throw new ErrorWithStatus("Không tìm thấy phòng để cập nhật!", 400);
 
         // 🔥 Xoá cache liên quan
         await redis.del(`room:detail:${roomId}`);       // Cache chi tiết phòng
@@ -135,6 +142,9 @@ class RoomService {
 
     static async xoaPhong(roomId) {
         const room = await RoomRepository.xoaPhong(roomId);
+        // an luon, xoa du lieu o redis
+        const cacheKey = `room:detail:${roomId}`;
+        redis.del(cacheKey)
         if (!room) throw new ErrorWithStatus("Không tìm thấy phòng để xóa!", 400);
         return room;
     }

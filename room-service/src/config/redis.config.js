@@ -10,13 +10,19 @@ const redis = new Redis({
 redis.on('connect', () => console.log('Redis connected'));
 redis.on('error', (err) => console.error('Redis error:', err));
 
-module.exports = redis;
 
 
 
+// key : value
 async function khoa(key, ttl = 5000) {
+    // sinh ra giá trị ngẫu nhiên để set vào redis
     const lockValue = uuidv4();
+    // set du lieu do redis
+    // px : tính băng giây
+    // ttl : thời gian sống
+    // NX : mình chỉ cấp key trong trường hợp key đó chưa tồn tại
     const result = await redis.set(key, lockValue, "PX", ttl, "NX");
+
     return result === "OK" ? lockValue : null;
 }
 
@@ -27,6 +33,7 @@ async function khoa(key, ttl = 5000) {
 async function yeuCauKhoa(key, ttl = 5000, timeout = 2000, retryDelay = 100) {
     const start = Date.now();
     let lockValue;
+    // 
 
     while ((Date.now() - start) < timeout) {
         lockValue = await khoa(key, ttl);
@@ -65,6 +72,7 @@ async function moKhoa(key, lockValue) {
 
 
 module.exports = {
+  redis,
     khoa, moKhoa, yeuCauKhoa
 }
 

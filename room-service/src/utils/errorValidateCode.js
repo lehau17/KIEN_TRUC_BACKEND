@@ -1,4 +1,4 @@
-export const errorMessages = {
+ const errorMessages = {
     ROOM_NAME_REQUIRED: "ROOM_000001",
     ROOM_PRICE_INVALID: "ROOM_000002",
     ROOM_CAPACITY_INVALID: "ROOM_000003",
@@ -10,14 +10,19 @@ export const errorMessages = {
 };
 
 // Object ánh xạ từ mã lỗi sang thông báo chi tiết
-export const detailedErrorMessages = {
+ const detailedErrorMessages = {
     [errorMessages.ROOM_NAME_REQUIRED]: { name: "Tên phòng là bắt buộc" },
     [errorMessages.ROOM_TYPE_INVALID]: { roomType: "Loại phòng không hợp lệ" },
     [errorMessages.ROOM_PRICE_INVALID]: { price: "Giá phòng không hợp lệ" },
     [errorMessages.ROOM_CAPACITY_INVALID]: { capacity: "Sức chứa phòng không hợp lệ" },
     [errorMessages.ROOM_STATUS_INVALID]: { roomType: "Loại phòng không hợp lệ" },
     [errorMessages.ROOM_RATING_INVALID]: { status: "Trạng thái phòng không hợp lệ" },
-    [errorMessages.ROOM_NAME_REQUIRED]: { rating: "Đánh giá phòng phải từ 1 đến 5" },
     [errorMessages.ROOM_DISCOUNT_INVALID]: { discount: "Giảm giá phải từ 0 đến 100" },
     [errorMessages.ROOM_ACTIVE_STATUS_INVALID]: { isActive: "Trạng thái hoạt động không hợp lệ" },
 };
+
+
+module.exports = {
+    errorMessages,
+     detailedErrorMessages
+}
