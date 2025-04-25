@@ -2,9 +2,11 @@ import { GlobalExceptionFilter } from '@app/common/filter/exception.filter';
 import { AccessTokenGuard } from '@app/common/guard/accessToken.guard';
 import { BlackListGuard } from '@app/common/guard/blacklist.guard';
 import { CheckRoleGuard } from '@app/common/guard/checkRole.guard';
+import { PublicThrottlerGuard } from '@app/common/guard/public.rate_limiter.guard';
 import { GlobalRateLimiter } from '@app/common/guard/rateLimiter.global';
 import { GlobalInterceptor } from '@app/common/interceptor/Globa.interceptor';
-import { ValidationPipe } from '@nestjs/common';
+import { RedisThrottlerStorageService } from '@app/common/redisThottle.service';
+import { ExecutionContext, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
@@ -15,9 +17,28 @@ import { PrismaService } from './prisma/prisma.service';
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
 
+    const redisStore = new RedisThrottlerStorageService();
+    const reflector = new Reflector();
+
     // use global guard
     app.useGlobalGuards(
         new GlobalRateLimiter(new ConfigService()),
+        new PublicThrottlerGuard(
+            {
+                throttlers: [
+                    {
+                        limit: Number(process.env.RATE_LIMIT_PUBLIC),
+                        ttl: 60,
+                        name: 'rate-limit:public',
+                        getTracker: (req: Record<string, any>, context: ExecutionContext) =>
+                            'rate-limit:public',
+                    },
+                ],
+            },
+            redisStore,
+            reflector,
+            ['/api/auth/login', '/api/auth/register'],
+        ),
         new AccessTokenGuard(
             new JwtService(),
             new ConfigService(),
