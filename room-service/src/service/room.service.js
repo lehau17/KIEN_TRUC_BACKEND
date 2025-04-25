@@ -1,74 +1,89 @@
+const { yeuCauKhoa } = require("../config/redis.config");
 const RoomRepository = require("../repository/room.repository");
 const { getOrSetCache } = require("../utils/cache.util");
 const ErrorWithStatus = require("../utils/errorWithStatus.util");
 const crypto = require("crypto");
 class RoomService {
     static async layDanhSachTatCaPhong(params) {
-        const key = `rooms:list:${crypto.createHash('md5').update(JSON.stringify(params)).digest('hex')}`;
-        return await getOrSetCache(key, async () => {
-            const filter = {};
-            const {
-                name,
-                to_price,
-                from_price = 0,
-                isAvailable,
-                roomType,
-                status,
-                from_rating,
-                to_rating,
-                isActive,
-                sortBy = "createdAt",
-                sortOrder = "desc",
-                page = 1,
-                limit = 10
-            } = params;
+        // dùng thuật toán md5 băm nhỏ để làm key ngắn lại
+        // miễn sao params không đổi, cache key không đỏi
+        const cacheKey = `rooms:list:${crypto.createHash("md5").update(JSON.stringify(params)).digest("hex")}`;
+        const lockKey = `lock:${cacheKey}`;
 
-            if (name) {
-                filter.name = { $regex: name, $options: "i" };
-            }
-            filter.price = { $gte: from_price };
-            if (to_price) filter.price.$lte = to_price;
-
-            if (typeof isAvailable === "boolean") filter.isAvailable = isAvailable;
-
-            const validRoomTypes = ["Standard", "Deluxe", "Suite"];
-            if (roomType && validRoomTypes.includes(roomType)) filter.roomType = roomType;
-
-            const validStatus = ["available", "booked", "maintenance"];
-            if (status && validStatus.includes(status)) filter.status = status;
-
-            if (from_rating || to_rating) {
-                filter.rating = {};
-                if (from_rating) filter.rating.$gte = from_rating;
-                if (to_rating) filter.rating.$lte = to_rating;
+        return await getOrSetCache(cacheKey, async () => {
+            // 5000 : thời gian sống của khoá
+            // 2000 : thời gian chờ lấy khoá
+            // 100 : thời gian thử lại
+            const lockValue = await yeuCauKhoa(lockKey, 5000, 2000, 100); // TTL 5s, timeout 2s, delay 100ms
+            // nếu sau 2s không có khoá => trả về null
+            if (!lockValue) {
+                console.warn("⚠️ Không lấy được lock, huỷ bỏ cache set.");
+                return null;
             }
 
-            if (typeof isActive === "boolean") filter.isActive = isActive;
+            try {
+                const filter = {};
+                const {
+                    name,
+                    to_price,
+                    from_price = 0,
+                    isAvailable,
+                    roomType,
+                    status,
+                    from_rating,
+                    to_rating,
+                    isActive,
+                    sortBy = "createdAt",
+                    sortOrder = "desc",
+                    page = 1,
+                    limit = 10
+                } = params;
 
-            const sort = {};
-            if (sortBy) sort[sortBy] = sortOrder === "asc" ? 1 : -1;
-
-            const skip = (page - 1) * limit;
-
-            const [total, rooms] = await Promise.all([
-                RoomRepository.demSoLuong(filter),
-                RoomRepository.layDanhSachTatCaPhong(filter, sort, skip, limit)
-            ]);
-
-            return {
-                data: rooms,
-                pagination: {
-                    total,
-                    page,
-                    limit,
-                    totalPages: Math.ceil(total / limit)
+                if (name) {
+                    filter.name = { $regex: name, $options: "i" };
                 }
-            };
-        }, 300);
+                filter.price = { $gte: from_price };
+                if (to_price) filter.price.$lte = to_price;
+                if (typeof isAvailable === "boolean") filter.isAvailable = isAvailable;
+
+                const validRoomTypes = ["Standard", "Deluxe", "Suite"];
+                if (roomType && validRoomTypes.includes(roomType)) filter.roomType = roomType;
+
+                const validStatus = ["available", "booked", "maintenance"];
+                if (status && validStatus.includes(status)) filter.status = status;
+
+                if (from_rating || to_rating) {
+                    filter.rating = {};
+                    if (from_rating) filter.rating.$gte = from_rating;
+                    if (to_rating) filter.rating.$lte = to_rating;
+                }
+
+                if (typeof isActive === "boolean") filter.isActive = isActive;
+
+                const sort = {};
+                sort[sortBy] = sortOrder === "asc" ? 1 : -1;
+                const skip = (page - 1) * limit;
+
+                const [total, rooms] = await Promise.all([
+                    RoomRepository.demSoLuong(filter),
+                    RoomRepository.layDanhSachTatCaPhong(filter, sort, skip, limit)
+                ]);
+
+                return {
+                    data: rooms,
+                    pagination: {
+                        total,
+                        page,
+                        limit,
+                        totalPages: Math.ceil(total / limit)
+                    }
+                };
+            } finally {
+                await moKhoa(lockKey, lockValue); // Giải phóng lock dù có lỗi hay không
+            }
+        }, 300); // tính bằng giây
+
     }
-
-
-
 
     static async layPhongTheoID(roomId) {
         const key = `room:detail:${roomId}`;

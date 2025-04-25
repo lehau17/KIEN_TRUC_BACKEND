@@ -1,6 +1,6 @@
 // src/redis.js
 const Redis = require('ioredis');
-
+const { v4: uuidv4 } = require("uuid");
 const redis = new Redis({
     host: process.env.REDIS_HOST || 'localhost',
     port: process.env.REDIS_PORT || 6379,
