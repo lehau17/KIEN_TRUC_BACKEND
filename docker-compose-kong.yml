@@ -1,0 +1,162 @@
+version: "3.8"
+
+networks:
+  kong-network:
+    driver: bridge
+
+services:
+  rabbitmq:
+    container_name: rabbit-booking
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: 1234
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - kong-network
+
+  redis:
+    image: redis:6
+    container_name: redis
+    networks:
+      - kong-network
+    ports:
+      - "6379:6379"
+
+  kong:
+    image: kong:3.6
+    container_name: kong
+    restart: always
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_PROXY_LISTEN: 0.0.0.0:8080
+    volumes:
+      - ./kong/kong.yml:/usr/local/kong/kong.yml
+    ports:
+      - "8080:8080"
+      - "8001:8001"
+    networks:
+      - kong-network
+    depends_on:
+      - user-service
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    volumes:
+      - ./data/data_db:/var/lib/postgresql/data
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin1234
+      POSTGRES_DB: user_service
+    ports:
+      - '5432:5432'
+    networks:
+      - kong-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U admin -d user_service']
+      interval: 10s
+      retries: 5
+      start_period: 10s
+
+  user-service:
+    container_name: user-service
+    build: ./user-service-v2
+    ports:
+      - '5000:5000'
+    networks:
+      - kong-network
+    environment:
+      DATABASE_URL: 'postgresql://admin:admin1234@postgres:5432/user_service?schema=public'
+      JWT_ACCESS_TOKEN_SECRET: 'sndkjbvfskdvfhjsvdfjhvsdjfhvsdkjfhvsjdhfvskdhvfkjshvdfhjk'
+      JWT_REFRESH_TOKEN_SECRET: 'jwt_refresh_token'
+      JWT_ACCESS_TOKEN_EXPIRES: '15m'
+      JWT_REFRESH_TOKEN_EXPIRES: '7d'
+      LIMIT_GLOBAL: '10'
+      PORT: '5000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  room-service:
+    container_name: room-service
+    build: ./room-service
+    ports:
+      - '5001:5001'
+    networks:
+      - kong-network
+    environment:
+      MONGO_URI: 'mongodb://mongo:27017/room-service'
+    depends_on:
+      - mongo
+
+
+  notify-service:
+    container_name: notify-service
+    build: ./notify-service
+    ports:
+      - '5005:5005'
+    networks:
+      - kong-network
+    environment:
+      MONGO_URI: 'mongodb://mongo:27017/room-service'
+      PORT: 5005
+      RABBITMQ_URL: amqp://admin:1234@rabbitmq:5672
+      RABBITMQ_QUEUE: booking_queue
+    depends_on:
+      - mongo
+
+
+  invoice-service:
+    container_name: invoice-service
+    build: ./invoice-service
+    ports:
+      - '5004:5004'
+    networks:
+      - kong-network
+    environment:
+      PORT: 5004
+      MONGO_URI: mongodb://mongo:27017/invoiceService
+      RABBITMQ_URL: amqp://admin:1234@rabbitmq:5672
+      RABBITMQ_QUEUE: booking_queue
+    depends_on:
+      - rabbitmq
+      - mongo
+  mongo:
+    container_name: mongo
+    image: mongo:latest
+    networks:
+      - kong-network
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/mongo:/data/db
+    restart: always
+
+  booking-service:
+    container_name: booking-service
+    build: ./BookingService
+    ports:
+      - '8085:8080'
+    networks:
+      - kong-network
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/booking-service
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: admin
+      RABBITMQ_PASSWORD: 1234
+      SERVER_PORT: 8080
+    depends_on:
+      - mongo
+      - rabbitmq
+

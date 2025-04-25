@@ -1,0 +1,71 @@
+name: deploy
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          script: |
+            set -e
+
+
+
+            # Check if the repo directory exists and is not empty
+            if [ -d "user_service_letrunghau" ]; then
+                echo "Repo đã tồn tại và có nội dung. Tiến hành xoá thư mục và clone lại..."
+                cd user_service_letrunghau
+                docker-compose down || echo "Pass"
+                cd ..
+                sudo rm -rf user_service_letrunghau
+            fi
+
+            echo "Tiến hành clone repo mới..."
+            git clone https://github.com/lehau17/user_service_letrunghau.git
+
+            cd ./user_service_letrunghau
+
+            # Write secrets to .env files
+            echo 'JWT_ACCESS_TOKEN_EXPIRES=${{ secrets.JWT_ACCESS_TOKEN_EXPIRES }}' >> ./.env
+            echo 'JWT_ACCESS_TOKEN_SECRET=${{ secrets.JWT_ACCESS_TOKEN_SECRET }}' >> ./.env
+            echo 'JWT_REFRESH_TOKEN_EXPIRES=${{ secrets.JWT_REFRESH_TOKEN_EXPIRES }}' >> ./.env
+            echo 'JWT_REFRESH_TOKEN_SECRET=${{ secrets.JWT_REFRESH_TOKEN_SECRET }}' >> ./.env
+            echo 'LIMITGLOBAL=${{ secrets.LIMITGLOBAL }}' >> ./.env
+            echo 'VPS_HOST=${{ secrets.VPS_HOST }}' >> ./.env
+            echo 'VPS_KEY=${{ secrets.VPS_KEY }}' >> ./.env
+            echo 'VPS_USER=${{ secrets.VPS_USER }}' >> ./.env
+
+
+            # Docker commands
+            echo "Dừng các container đang chạy..."
+
+            sudo chmod 666 /var/run/docker.sock
+            docker-compose down || echo "Không có container nào đang chạy."
+
+            echo "Build lại các container..."
+            docker-compose build || echo "Không có container nào để build lại"
+
+            echo "Khởi chạy các container..."
+            docker-compose up -d
+
+            # Dọn dẹp các hình ảnh Docker không cần thiết
+            echo "Dọn dẹp các hình ảnh Docker không dùng..."
+            dangling_images=$(docker images -f "dangling=true" -q)
+            if [ -n "$dangling_images" ]; then
+                echo "$dangling_images" | xargs docker rmi || echo "Không thể xóa các hình ảnh."
+            else
+                echo "Không có hình ảnh Docker nào cần dọn dẹp."
+            fi
+
+            echo "Quá trình triển khai hoàn tất!"

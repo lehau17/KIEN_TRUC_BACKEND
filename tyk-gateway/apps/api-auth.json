@@ -1,0 +1,65 @@
+{
+    "name": "API Auth Service",
+    "api_id": "api-auth",
+    "org_id": "default",
+    "active": true,
+    "proxy": {
+        "listen_path": "/auth/",
+        "target_url": "http://user-service:5000/auth",
+        "strip_listen_path": true
+    },
+    "auth": {
+        "auth_type": "jwt",
+        "auth_header_name": "Authorization"
+    },
+    "enable_jwt": true,
+    "jwt_identity_base_field": "sub",
+    "jwt_signing_method": "hmac",
+    "jwt_source": "mysecretkey",
+    "enable_rate_limit": true,
+    "rate_limit": {
+        "rate": 10,
+        "per": 1,
+        "burst": 5
+    },
+    "ignored_paths": {
+        "jwt": [
+            {
+                "path": "/login",
+                "method": "POST"
+            },
+            {
+                "path": "/register",
+                "method": "POST"
+            },
+            {
+                "path": "/refresh-token",
+                "method": "POST"
+            },
+            {
+                "path": "/verify-account",
+                "method": "GET"
+            },
+            {
+                "path": "/verify-change-password",
+                "method": "POST"
+            }
+        ]
+    },
+    "version_data": {
+        "not_versioned": true,
+        "versions": {
+            "default": {
+                "name": "default",
+                "use_extended_paths": true,
+                "extended_paths": {},
+                "allowed_methods": [
+                    "POST",
+                    "GET",
+                    "OPTIONS",
+                    "PATCH"
+                ]
+            }
+        }
+    }
+}
