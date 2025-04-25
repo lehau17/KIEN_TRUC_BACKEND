@@ -8,6 +8,7 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ResourcesModule } from './resources/resources.module';
 import { RoleModule } from './role/role.module';
+import { UserModule } from './user/user.module';
 @Global()
 @Module({
     imports: [
@@ -22,6 +23,7 @@ import { RoleModule } from './role/role.module';
         RoleModule,
         ResourcesModule,
         PermissionsModule,
+        UserModule,
     ],
 })
 export class AppModule { }
