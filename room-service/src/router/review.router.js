@@ -2,11 +2,12 @@
 const express = require("express");
 const { wrapperRequestHandler } = require("../utils");
 const ReviewController = require("../controller/review.controller");
+const authThenMiddleware = require("../middlewares/auth.middleware");
 
 const reviewRouter = express.Router();
 
-reviewRouter.post("/", wrapperRequestHandler(ReviewController.taoReview));
+reviewRouter.post("/",authThenMiddleware, wrapperRequestHandler(ReviewController.taoReview));
 reviewRouter.get("/:roomId", wrapperRequestHandler(ReviewController.layDanhSachReviewTheoPhong));
-reviewRouter.delete("/:reviewId", wrapperRequestHandler(ReviewController.xoaReview));
+reviewRouter.delete("/:reviewId",authThenMiddleware, wrapperRequestHandler(ReviewController.xoaReview));
 
 module.exports = reviewRouter;
