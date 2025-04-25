@@ -6,7 +6,7 @@ const { wrapWithBreaker } = require('../config/circuitBreaker');
 const axios = require('axios');
 const axiosInstance = require('../config/axiosConfig');
 
-const CACHE_TTL = 10; // cache thời gian 5 phút
+const CACHE_TTL = 10; //10s
 
 
 
