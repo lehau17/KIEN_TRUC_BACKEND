@@ -1,0 +1,74 @@
+spring:
+  application:
+    name: BookingService
+  server:
+    port: 8080
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: Hotels
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+  amqp:
+    deserialization:
+      trust:
+        all: true
+
+# Cấu hình Resilience4J Rate Limiter
+resilience4j:
+  ratelimiter:
+    instances:
+      bookingRateLimiter:
+        limitForPeriod: 5
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
+      bookingConfirmLimiter:
+        limitForPeriod: 3
+        limitRefreshPeriod: 15s
+        timeoutDuration: 0
+      bookingCheckinLimiter:
+        limitForPeriod: 2
+        limitRefreshPeriod: 20s
+        timeoutDuration: 0
+      bookingCheckoutLimiter:
+        limitForPeriod: 2
+        limitRefreshPeriod: 20s
+        timeoutDuration: 0
+      bookingPagedLimiter:
+        limitForPeriod: 5
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
+      bookingByDateLimiter:
+        limitForPeriod: 5
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
+      bookingAvailabilityLimiter:
+        limitForPeriod: 5
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
+
+# Cấu hình logging
+logging:
+  level:
+    root: INFO
+    io.github.resilience4j: DEBUG
+    org.springframework: INFO
+
+# Cấu hình Eureka
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true

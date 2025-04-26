@@ -2,6 +2,7 @@ package bookingservice.service;
 
 import bookingservice.dto.BookingRequest;
 import bookingservice.dto.BookingResponse;
+import bookingservice.entity.Booking;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -26,4 +27,11 @@ public interface BookingService {
     List<BookingResponse> getBookingsByDate(LocalDate date, String type);
 
     boolean isRoomBooked(String roomId, LocalDate checkInAt, LocalDate checkOutAt);
+
+    // Test Redis
+    boolean saveBookingToRedis(Booking booking);
+
+    Booking getBookingFromRedis(String id);
+
+    boolean deleteBookingFromRedis(String id);
 }
