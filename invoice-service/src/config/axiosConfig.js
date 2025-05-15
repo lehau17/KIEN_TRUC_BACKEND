@@ -8,7 +8,7 @@ const exponentialDelay = (retryCount) => {
 
 // Cấu hình axios instance với timeout và retry
 const axiosInstance = axios.create({
-    baseURL: 'http://localhost:8080', // API base URL
+    baseURL: 'http://booking-service:8080', // API base URL
     timeout: 50000,  // Timeout sau 5 giây
     headers: { 'Accept': 'application/json' }  // Đảm bảo phản hồi ở dạng JSON
 });

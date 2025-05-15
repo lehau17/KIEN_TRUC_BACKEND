@@ -209,6 +209,44 @@ services:
             config:
               claims_to_verify: [exp]
 
+
+      # --- Review APIs ---
+      - name: create-review
+        paths: ["/api/review$", "/api/review"]
+        methods: ["POST"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: get-reviews-by-room
+        paths: ["~/api/review/[^/]+$"]
+        methods: ["GET"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: update-review
+        paths: ["~/api/review/[^/]+$"]
+        methods: ["PUT"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: delete-review
+        paths: ["~/api/review/[^/]+$"]
+        methods: ["DELETE"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
   # --- booking-service ---
   - name: booking-service
     url: http://booking-service:8080

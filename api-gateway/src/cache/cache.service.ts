@@ -3,25 +3,25 @@ import Redis from 'ioredis';
 
 @Injectable()
 export class CacheService implements OnModuleInit {
-  private redis: Redis;
-  private logger: Logger;
-  onModuleInit() {
-    this.logger = new Logger(CacheService.name);
-    this.redis = new Redis({
-      host: process.env.REDIS_HOST,
-      port: Number(process.env.REDIS_HOST),
-      password: process.env.REDIS_PASSWORD,
-      db: 0,
-    });
-    this.logger.error('init cache service');
-  }
+    private redis: Redis;
+    private logger: Logger;
+    onModuleInit() {
+        this.logger = new Logger(CacheService.name);
+        this.redis = new Redis({
+            host: process.env.REDIS_HOST || "redis",
+            port: Number(process.env.REDIS_HOST || "6379"),
+            password: process.env.REDIS_PASSWORD,
+            db: 0,
+        });
+        this.logger.error('init cache service');
+    }
 
-  // Phương thức để lấy Redis instance
-  getClient(): Redis {
-    return this.redis;
-  }
+    // Phương thức để lấy Redis instance
+    getClient(): Redis {
+        return this.redis;
+    }
 
-  onModuleDestroy() {
-    this.redis.quit();
-  }
+    onModuleDestroy() {
+        this.redis.quit();
+    }
 }

@@ -8,10 +8,10 @@ scrape_configs:
 
   - job_name: 'postgres'
     static_configs:
-      - targets: ['postgres:9187']
+      - targets: ['postgres-exporter:9187']
 
   - job_name: 'mongo'
     static_configs:
-      - targets: ['mongo:9216']
+      - targets: ['mongo-exporter:9216']
 
   # Optionally bạn muốn monitor user-service, room-service HTTP metrics nếu có Prometheus exporter

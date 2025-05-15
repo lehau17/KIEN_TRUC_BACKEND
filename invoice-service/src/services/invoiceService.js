@@ -28,6 +28,7 @@ const processBookingPayment = async (bookingData) => {
             amount: bookingData.amount,
             paymentMethod: bookingData.paymentMethod,
             status: 'paid',
+            roomId: bookingData.roomId
         };
 
         const newInvoice = await invoiceRepository.createInvoice(invoiceData);
@@ -211,15 +212,15 @@ const getBookingsFromBookingService = async () => {
         console.log('Raw response:', response.data);  // Log raw response
 
         // Kiểm tra nếu không có data hoặc data rỗng
-        if (!response.data || !response.data.bookings || response.data.bookings.length === 0) {
+        if (!response.data || !response.data.data || response.data.data.length === 0) {
             throw new Error('No bookings data received');
         }
 
         // Lưu vào cache Redis
-        await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(response.data.bookings));
+        await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(response.data.data));
 
-        console.log('Bookings data:', response.data.bookings);
-        return response.data.bookings;
+        console.log('Bookings data:', response.data.data);
+        return response.data.data;
     } catch (error) {
         // Kiểm tra loại lỗi và log thông báo chi tiết
         if (error.code === 'ECONNREFUSED') {
