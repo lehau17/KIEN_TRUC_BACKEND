@@ -1,0 +1,131 @@
+services:
+  # api-gateway:
+  #   container_name: api-gateway
+  #   build: ./be_spotify_microservice/api-gateway
+  #   ports:
+  #     - 3000:3000
+  #   networks:
+  #     - node-network
+    # depends_on:
+    #   - rabbitmq
+    #   - redis
+    # environment:
+    #   - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
+    #   - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+    #   - RATE_LIMIT_GLOBAL=${RATE_LIMIT_GLOBAL}
+    #   - RATE_LIMIT_PUBLIC=${RATE_LIMIT_PUBLIC}
+    #   - RATE_LIMIT_TTL=${RATE_LIMIT_TTL}
+    #   - RATE_LIMIT_PRIVATE=${RATE_LIMIT_PRIVATE}
+    #   - REDIS_PORT=${REDIS_PORT}
+    #   - REDIS_HOST=${REDIS_HOST}
+
+ 
+
+    # depends_on:
+    #   - postgres
+    # environment:
+    #   - DATABASE_URL=${DATABASE_URL_USER_SERVICE}
+    #   - ACCESS_TOKEN_KEY=${JWT_ACCESS_SECRET}
+    #   - REFRESH_TOKEN_KEY=${JWT_REFRESH_SECRET}
+
+  rabbitmq:
+    container_name: some-rabbit
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: 1234 
+    ports:
+      - 5673:5672
+      - 15672:15672
+    networks:
+      - node-network
+
+  # redis:
+  #   container_name: some-redis
+  #   image: redis:latest
+  #   environment:
+  #     REDIS_PASSWORD: 1234 # Mật khẩu cho Redis
+  #   ports:
+  #     - 6379:6379
+  #   networks:
+  #     - node-network
+  #   command: ["redis-server", "--requirepass", "1234"]
+  #   volumes:
+  #     - redis-data:/data
+
+  # postgres:
+  #   container_name: some-postgres
+  #   image: postgres:latest
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: 1234
+  #   ports:
+  #     - 5432:5432
+  #   networks:
+  #     - node-network
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #     - ./volumes/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+  #   container_name: elasticsearch
+  #   environment:
+  #     - discovery.type=single-node
+  #     - ELASTIC_PASSWORD=changeme
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   ports:
+  #     - "9200:9200"
+  #     - "9300:9300"
+  #   networks:
+  #     - elk
+
+  # logstash:
+  #   image: docker.elastic.co/logstash/logstash:8.15.0
+  #   container_name: logstash
+  #   environment:
+  #     - LS_JAVA_OPTS="-Xmx256m -Xms256m"
+  #   ports:
+  #     - "5044:5044"
+  #   networks:
+  #     - elk
+  #   depends_on:
+  #     - elasticsearch
+  #   volumes:
+  #     - ./be_spotify_microservice/elk_stask/logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+  #     - ./be_spotify_microservice/elk_stask/logstash/driver:/usr/share/logstash/driver
+
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:8.6.0
+  #   container_name: kibana
+  #   environment:
+  #     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+  #     - ELASTICSEARCH_PASSWORD=changeme
+  #   ports:
+  #     - "5601:5601"
+  #   networks:
+  #     - elk
+  #   depends_on:
+  #     - elasticsearch
+  # nginx:
+  #   image: "jc21/nginx-proxy-manager:latest"
+  #   restart: unless-stopped
+  #   ports:
+  #     # These ports are in format <host-port>:<container-port>
+  #     - 80:80 # Public HTTP Port
+  #     - 443:443 # Public HTTPS Port
+  #     - 81:81 # Admin Web Port
+  #     # Add any other Stream port you want to expose
+  #     # - '21:21' # FTP
+  #   networks:
+  #     - node-network
+  #   volumes:
+  #     - ./data:/data
+  #     - ./letsencrypt:/etc/letsencrypt
+
+networks:
+  node-network:
+    driver: bridge
+

@@ -1,0 +1,75 @@
+<script src="https://js.stripe.com/v3/"></script>
+
+<form id="payment-form">
+  <input id="client-secret" type="text" placeholder="Nhập client_secret từ backend"  required />
+  <input id="cardholder-name" type="text" placeholder="Tên trên thẻ" value="Lưu Trung Nghĩa" required />
+  <div id="card-element"></div>
+  <button id="pay-button" type="submit">Xác nhận thanh toán</button>
+</form>
+
+<div id="payment-message"></div>
+
+<script>
+  const stripe = Stripe('pk_test_51RP3KlRBrdlMwlulJ5t8wgP4c69WUckRnr0xyt3d1dnpXu1TB9E9AB5eVFqamk78GoIQYLK2LumE5HTjXpyV7fwm00metvjoGg');
+  const elements = stripe.elements();
+  const cardElement = elements.create('card');
+  cardElement.mount('#card-element');
+
+  const form = document.getElementById('payment-form');
+  const paymentMessage = document.getElementById('payment-message');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const clientSecret = document.getElementById('client-secret').value.trim();
+    const cardholderName = document.getElementById('cardholder-name').value.trim();
+
+    if (!clientSecret || !cardholderName) {
+      paymentMessage.textContent = 'Vui lòng nhập đầy đủ client_secret và Tên trên thẻ.';
+      paymentMessage.style.color = 'red';
+      return;
+    }
+
+    try {
+      const { error, paymentIntent } = await stripe.confirmCardPayment(
+        clientSecret,
+        {
+          payment_method: {
+            card: cardElement,
+            billing_details: {
+              name: cardholderName,
+            },
+          },
+        }
+      );
+
+      if (error) {
+        paymentMessage.textContent = 'Thanh toán lỗi: ' + error.message;
+        paymentMessage.style.color = 'red';
+      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+        paymentMessage.textContent = 'Thanh toán thành công! ID: ' + paymentIntent.id;
+        paymentMessage.style.color = 'green';
+
+        // Gọi API confirm backend
+        const res = await fetch('http://localhost:5005/api/payment/confirm-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clientSecret }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          paymentMessage.textContent += '\nXác nhận backend thất bại: ' + data.message;
+        } else {
+          paymentMessage.textContent += '\nĐã cập nhật trạng thái thanh toán backend.';
+        }
+      } else {
+        paymentMessage.textContent = 'Trạng thái hiện tại: ' + paymentIntent.status;
+        paymentMessage.style.color = 'orange';
+      }
+    } catch (err) {
+      paymentMessage.textContent = 'Lỗi xử lý: ' + err.message;
+      paymentMessage.style.color = 'red';
+    }
+  });
+</script>
