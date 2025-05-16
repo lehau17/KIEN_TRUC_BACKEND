@@ -6,7 +6,7 @@ const redisClient = require('../config/redisClient');
 const { wrapWithBreaker } = require('../config/circuitBreaker');
 const axiosInstance = require('../config/axiosConfig');
 const { v4: uuidv4 } = require('uuid'); 
-
+const amqp = require('amqplib');
 const CACHE_TTL = 10;
 
 // 1. Tạo đơn thanh toán (với paymentIntentId)
@@ -74,6 +74,9 @@ const confirmPayment = async (clientSecret) => {
   await redisClient.del(`payment:all`);
   await redisClient.del(`payment:booking:${payment.bookingId}`);
 
+   // 6. Gửi event payment đã thanh toán thành công
+  await sendPaymentEvent(updatedPayment);
+  
   return updatedPayment;
 };
 
@@ -300,6 +303,28 @@ const getPaymentIntent = async (paymentIntentId) => {
     throw new Error('Stripe error: ' + error.message);
   }
 };
+
+async function sendPaymentEvent(payment) {
+  try {
+    const connection = await amqp.connect(process.env.RABBITMQ_URL);
+    const channel = await connection.createChannel();
+
+    const exchange = 'payment.exchange'; 
+    const routingKey = 'PAYMENT_CONFIRMED'; 
+
+    await channel.assertExchange(exchange, 'topic', { durable: true });
+
+    const messageBuffer = Buffer.from(JSON.stringify(payment));
+
+    channel.publish(exchange, routingKey, messageBuffer);
+    console.log('✅ Payment event sent:', payment);
+
+    await channel.close();
+    await connection.close();
+  } catch (err) {
+    console.error('❌ Error sending payment event:', err.message);
+  }
+}
 
 module.exports = {
     processBookingPayment,

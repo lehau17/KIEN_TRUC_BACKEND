@@ -13,12 +13,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
-// Route webhook Stripe riêng, dùng raw middleware
-app.post(
-  '/api/payment/webhook', 
-  express.raw({ type: 'application/json' }), 
-  paymentController.handleWebhook
-);
+
 
 app.use("/", mainRouter);
 

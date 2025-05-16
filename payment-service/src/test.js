@@ -2,7 +2,7 @@ require('dotenv').config();
 const amqp = require('amqplib');
 
 const bookingEvent = {
-  bookingId: '5',
+  bookingId: '6',
   userId: 'user123',
   roomId: 'room101', 
   amount: 500,
