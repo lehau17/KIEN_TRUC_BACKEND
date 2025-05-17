@@ -171,17 +171,17 @@ services:
         strip_path: false
 
       - name: get-room-by-id
-        paths: ["/api/room/{id}"]
+        paths: ["/api/room/[^/]+$"]
         methods: ["GET", "OPTIONS"]
         strip_path: false
 
       - name: update-room
-        paths: ["/api/room/{id}"]
+        paths: ["/api/room/[^/]+$"]
         methods: ["PUT", "OPTIONS"]
         strip_path: false
 
       - name: delete-room
-        paths: ["/api/room/{id}"]
+        paths: ["/api/room/[^/]+$"]
         methods: ["DELETE", "OPTIONS"]
         strip_path: false
 

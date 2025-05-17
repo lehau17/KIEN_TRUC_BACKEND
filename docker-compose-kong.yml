@@ -136,6 +136,18 @@ services:
       - mongo
       - redis
 
+  upload-service:
+    container_name: upload-service
+    build: ./upload-service
+    ports:
+      - '9999:9999'
+    networks:
+      - kong-network
+    depends_on:
+      - mongo
+      - minio
+      - redis
+
 
   # invoice-service:
   #   container_name: invoice-service
@@ -167,6 +179,23 @@ services:
     volumes:
       - ./data/mongo:/data/db
     restart: always
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password
+    volumes:
+      - ./data/minio:/data
+      - ./config/minio:/root/.minio
+    command: server /data --console-address ":9001"
+    networks:
+      - kong-network
 
   # booking-service:
   #   container_name: booking-service
