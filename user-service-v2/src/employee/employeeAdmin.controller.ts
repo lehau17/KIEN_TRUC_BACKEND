@@ -30,8 +30,8 @@ import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { UpdateEmployeeParamDto } from './dto/update-employee.param.dto';
 import { EmployeeService } from './employee.service';
 
-@Controller('/api/employees')
-@ApiTags('/api/employees')
+@Controller('/api/admin/employees')
+@ApiTags('/api/admin/employees')
 @ApiBearerAuth()
 export class EmployeeController {
     constructor(private readonly employeeService: EmployeeService) { }
@@ -93,7 +93,7 @@ export class EmployeeController {
 
     @Patch('/:id')
     @ApiBearerAuth()
-    @Role(['ADMIN', "MANAGER"])
+    @Role(['ADMIN'])
     @ApiOperation({ summary: 'Update User Cho role Admin' })
     @MessageDeco(MessageResponse.CHANGE_PASSWORD_SUCCESS)
     @ApiParam({

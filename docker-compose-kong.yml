@@ -137,29 +137,28 @@ services:
       - redis
 
 
-  invoice-service:
-    container_name: invoice-service
-    build: ./invoice-service
-    ports:
-      - '5004:5004'
-    networks:
-      - kong-network
-    environment:
-      PORT: 5004
-      MONGO_URI: mongodb://mongo:27017/invoiceService
-      RABBITMQ_URL: amqp://admin:1234@rabbitmq:5672
-      RABBITMQ_QUEUE: booking_queue
-      REDIS_URL: redis://redis:6379
-      QUEUE_NAME: confirm.queue
-      RABBITMQ_EXCHANGE: booking.exchange
-      RABBITMQ_DEFAULT_VHOST: /
+  # invoice-service:
+  #   container_name: invoice-service
+  #   build: ./invoice-service
+  #   ports:
+  #     - '5004:5004'
+  #   networks:
+  #     - kong-network
+  #   environment:
+  #     PORT: 5004
+  #     MONGO_URI: mongodb://mongo:27017/invoiceService
+  #     RABBITMQ_URL: amqp://admin:1234@rabbitmq:5672
+  #     RABBITMQ_QUEUE: booking_queue
+  #     REDIS_URL: redis://redis:6379
+  #     QUEUE_NAME: confirm.queue
+  #     RABBITMQ_EXCHANGE: booking.exchange
+  #     RABBITMQ_DEFAULT_VHOST: /
 
-    depends_on:
-      - rabbitmq
-      - mongo
-      - redis
+  #   depends_on:
+  #     - rabbitmq
+  #     - mongo
+  #     - redis
   mongo:
-    container_name: mongo
     image: mongo:6
     networks:
       - kong-network
@@ -169,92 +168,92 @@ services:
       - ./data/mongo:/data/db
     restart: always
 
-  booking-service:
-    container_name: booking-service
-    build: ./BookingService
-    ports:
-      - '8085:8080'
-    networks:
-      - kong-network
-    environment:
-      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/booking-service
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: 5672
-      RABBITMQ_USERNAME: admin
-      RABBITMQ_PASSWORD: 1234
-      SERVER_PORT: 8080
-    depends_on:
-      - mongo
-      - rabbitmq
-      - redis
+  # booking-service:
+  #   container_name: booking-service
+  #   build: ./BookingService
+  #   ports:
+  #     - '8085:8080'
+  #   networks:
+  #     - kong-network
+  #   environment:
+  #     SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/booking-service
+  #     RABBITMQ_HOST: rabbitmq
+  #     RABBITMQ_PORT: 5672
+  #     RABBITMQ_USERNAME: admin
+  #     RABBITMQ_PASSWORD: 1234
+  #     SERVER_PORT: 8080
+  #   depends_on:
+  #     - mongo
+  #     - rabbitmq
+  #     - redis
 
     # Node Exporter để thu thập metrics máy chủ
-  node-exporter:
-    image: prom/node-exporter:latest
-    container_name: node-exporter
-    restart: always
-    ports:
-      - "9100:9100"
-    networks:
-      - kong-network
+  # node-exporter:
+  #   image: prom/node-exporter:latest
+  #   container_name: node-exporter
+  #   restart: always
+  #   ports:
+  #     - "9100:9100"
+  #   networks:
+  #     - kong-network
 
-  # Prometheus để scrape metrics
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    restart: always
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-    networks:
-      - kong-network
-    depends_on:
-      - node-exporter
-      - mongo
-      - postgres
+  # # Prometheus để scrape metrics
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: prometheus
+  #   restart: always
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+  #   networks:
+  #     - kong-network
+  #   depends_on:
+  #     - node-exporter
+  #     - mongo
+  #     - postgres
 
-  # Grafana để visualize metrics
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    restart: always
-    ports:
-      - "3000:3000"
-    networks:
-      - kong-network
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    depends_on:
-      - prometheus
+  # # Grafana để visualize metrics
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   container_name: grafana
+  #   restart: always
+  #   ports:
+  #     - "3000:3000"
+  #   networks:
+  #     - kong-network
+  #   environment:
+  #     - GF_SECURITY_ADMIN_USER=admin
+  #     - GF_SECURITY_ADMIN_PASSWORD=admin
+  #   depends_on:
+  #     - prometheus
 
-  postgres-exporter:
-    image: prometheuscommunity/postgres-exporter
-    container_name: postgres-exporter
-    restart: always
-    ports:
-      - "9187:9187"
-    networks:
-      - kong-network
-    environment:
-      DATA_SOURCE_NAME: "postgresql://admin:admin1234@postgres:5432/user_service?sslmode=disable"
-    depends_on:
-      - postgres
+  # postgres-exporter:
+  #   image: prometheuscommunity/postgres-exporter
+  #   container_name: postgres-exporter
+  #   restart: always
+  #   ports:
+  #     - "9187:9187"
+  #   networks:
+  #     - kong-network
+  #   environment:
+  #     DATA_SOURCE_NAME: "postgresql://admin:admin1234@postgres:5432/user_service?sslmode=disable"
+  #   depends_on:
+  #     - postgres
 
 
-  mongo-exporter:
-    image: bitnami/mongodb-exporter:latest
-    container_name: mongo-exporter
-    restart: always
-    ports:
-      - "9216:9216"
-    networks:
-      - kong-network
-    environment:
-      - MONGODB_URI=mongodb://mongo:27017
-    depends_on:
-      - mongo
+  # mongo-exporter:
+  #   image: bitnami/mongodb-exporter:latest
+  #   container_name: mongo-exporter
+  #   restart: always
+  #   ports:
+  #     - "9216:9216"
+  #   networks:
+  #     - kong-network
+  #   environment:
+  #     - MONGODB_URI=mongodb://mongo:27017
+  #   depends_on:
+  #     - mongo
 
 
 

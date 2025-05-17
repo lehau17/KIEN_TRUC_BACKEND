@@ -20,9 +20,7 @@ export class UpdateEmployeeDto {
     @IsOptional()
     avatar?: string;
 
-    @IsOptional()
-    email?: string
 
     @IsOptional()
-    role?: string
+    role: string
 }

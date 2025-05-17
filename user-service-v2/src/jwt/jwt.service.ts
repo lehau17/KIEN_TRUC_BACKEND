@@ -2,6 +2,7 @@ import { TokenPayload, TokenType } from '@app/common';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { v4 } from 'uuid';
 import { TokenPayloadCreateDto } from './payloadCreate.dto';
 
 @Injectable()
@@ -39,6 +40,7 @@ export class JsonWebTokenService {
     async signToken(payload: TokenPayloadCreateDto): Promise<string> {
         return this.jwtService.signAsync({
             ...payload,
+            jti: v4(),
             iss: "my-key"
         }, {
             secret:
