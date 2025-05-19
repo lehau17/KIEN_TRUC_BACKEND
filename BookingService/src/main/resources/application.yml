@@ -25,7 +25,7 @@ spring:
 #      trust:
 #        all: true
 # rabbitmq server:
-  rabbitmq:
+#  rabbitmq:
     host: 44.203.85.39
     port: 5673
     username: admin
@@ -35,6 +35,9 @@ spring:
       deserialization:
         trust:
           all: true
+room-service:
+  url: http://localhost:5001/api/room
+
 # Cấu hình Resilience4J Rate Limiter
 resilience4j:
   ratelimiter:
@@ -80,5 +83,5 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
-    fetch-registry: true
-    register-with-eureka: true
+    fetch-registry: false
+    register-with-eureka: false
