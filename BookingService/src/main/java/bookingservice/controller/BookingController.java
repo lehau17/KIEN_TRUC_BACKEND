@@ -1,5 +1,6 @@
 package bookingservice.controller;
 
+import java.nio.charset.StandardCharsets;
 import bookingservice.dto.BookingRequest;
 import bookingservice.dto.BookingResponse;
 import bookingservice.dto.RoomDTO;
@@ -8,16 +9,26 @@ import bookingservice.entity.Booking;
 import bookingservice.enums.BookingStatus;
 import bookingservice.service.BookingService;
 import bookingservice.service.RoomServiceClient;
+import bookingservice.util.JwtUtil;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.jsonwebtoken.Claims;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.StringUtils;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -34,34 +45,48 @@ public class BookingController {
 
     private final BookingService bookingService;
     private final RoomServiceClient roomServiceClient;
+    private final JwtUtil jwtUtil;
 
-    public BookingController(BookingService bookingService, RoomServiceClient roomServiceClient) {
+    public BookingController(BookingService bookingService, RoomServiceClient roomServiceClient, JwtUtil jwtUtil) {
         this.bookingService = bookingService;
         this.roomServiceClient = roomServiceClient;
+        this.jwtUtil = jwtUtil;
     }
 
     @RateLimiter(name = "bookingRateLimiter", fallbackMethod = "tooManyRequests")
     @PostMapping
-    public ResponseEntity<ApiResponse<BookingResponse>> createBooking(@Valid @RequestBody BookingRequest request,
-                                                                      BindingResult result) {
+    public ResponseEntity<ApiResponse<BookingResponse>> createBooking(
+            @Valid @RequestBody BookingRequest request,
+            BindingResult result,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        logger.info("Received booking request");
+
+        if (!StringUtils.hasText(userDetails.getUsername())) {
+            logger.warn("UserDetails is null or empty – not authenticated");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>("Unauthenticated", false, null));
+        }
+        String userId = userDetails.getUsername();
+        logger.info("Authenticated userId: {}", userId);
+
         if (result.hasErrors()) {
             String errorMessage = result.getAllErrors().stream()
                     .map(ObjectError::getDefaultMessage)
                     .collect(Collectors.joining(", "));
-            logger.warn("Validation errors in booking request: {}", errorMessage);
+            logger.warn("Validation errors: {}", errorMessage);
             return ResponseEntity.badRequest().body(new ApiResponse<>(errorMessage, false, null));
         }
 
         try {
-            BookingResponse response = bookingService.createBooking(request);
+            BookingResponse response = bookingService.createBooking(userId, request); // 👈 truyền userId riêng
             return ResponseEntity.ok(new ApiResponse<>("Booking created successfully", true, response));
         } catch (IllegalArgumentException e) {
             logger.warn("Invalid booking request: {}", e.getMessage());
             return ResponseEntity.badRequest().body(new ApiResponse<>("Error: " + e.getMessage(), false, null));
         } catch (Exception e) {
             logger.error("Unexpected error creating booking: {}", e.getMessage());
-            return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>("Unexpected error: " + e.getMessage(), false, null));
+            return ResponseEntity.badRequest().body(new ApiResponse<>("Unexpected error: " + e.getMessage(), false, null));
         }
     }
 
@@ -446,4 +471,19 @@ public class BookingController {
         return ResponseEntity.status(429)
                 .body(new ApiResponse<>("Too many requests - Please try again later.", false, null));
     }
+
+    private String extractUserIdFromToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(Keys.hmacShaKeyFor("sndkjbvfskdvfhjsvdfjhvsdjfhvsdkjfhvsjdhfvskdhvfkjshvdfhjk".getBytes(StandardCharsets.UTF_8)))
+                    .build()
+                    .parseClaimsJws(token.replace("Bearer ", ""))
+                    .getBody();
+            return claims.get("id").toString();
+        } catch (Exception e) {
+            logger.error("Failed to extract userId from token: {}", e.getMessage());
+            throw new IllegalArgumentException("Token không hợp lệ");
+        }
+    }
+
 }

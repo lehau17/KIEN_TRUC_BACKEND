@@ -1,6 +1,8 @@
 spring:
   application:
     name: BookingService
+  main:
+    allow-bean-definition-overriding: true
   server:
     port: 8080
   data:
@@ -25,7 +27,7 @@ spring:
 #      trust:
 #        all: true
 # rabbitmq server:
-#  rabbitmq:
+  rabbitmq:
     host: 44.203.85.39
     port: 5673
     username: admin
@@ -70,6 +72,10 @@ resilience4j:
         limitForPeriod: 5
         limitRefreshPeriod: 10s
         timeoutDuration: 0
+      bookingCancelLimiter:
+        limitForPeriod: 3
+        limitRefreshPeriod: 15s
+        timeoutDuration: 0
 
 # Cấu hình logging
 logging:
@@ -77,6 +83,7 @@ logging:
     root: INFO
     io.github.resilience4j: DEBUG
     org.springframework: INFO
+    org.springframework.security: DEBUG
 
 # Cấu hình Eureka
 eureka:
@@ -85,3 +92,6 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
     fetch-registry: false
     register-with-eureka: false
+jwt:
+  secret: sndkjbvfskdvfhjsvdfjhvsdjfhvsdkjfhvsjdhfvskdhvfkjshvdfhjk
+  expiration: 86400000

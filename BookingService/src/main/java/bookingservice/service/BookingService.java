@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface BookingService {
-    BookingResponse createBooking(BookingRequest request);
+    BookingResponse createBooking(String userId, BookingRequest request);
 
     List<BookingResponse> getAllBookings();
 

@@ -6,9 +6,6 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 public class BookingRequest {
-    @NotBlank(message = "User ID không được để trống")
-    private String userId;
-
     @NotBlank(message = "Room ID không được để trống")
     private String roomId;
 
@@ -20,19 +17,10 @@ public class BookingRequest {
 
     public BookingRequest() {}
 
-    public BookingRequest(String userId, String roomId, LocalDate checkInAt, LocalDate checkOutAt) {
-        this.userId = userId;
+    public BookingRequest(String roomId, LocalDate checkInAt, LocalDate checkOutAt) {
         this.roomId = roomId;
         this.checkInAt = checkInAt;
         this.checkOutAt = checkOutAt;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
     }
 
     public String getRoomId() {

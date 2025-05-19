@@ -47,8 +47,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingResponse createBooking(BookingRequest request) {
-        logger.info("Creating booking for user {} and room {}", request.getUserId(), request.getRoomId());
+    public BookingResponse createBooking(String userId, BookingRequest request) {
+        logger.info("Creating booking for user {} and room {}", userId, request.getRoomId());
         validateBookingRequest(request);
 
         // Kiểm tra phòng từ RoomService
@@ -65,7 +65,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         Booking booking = new Booking(
-                request.getUserId(),
+                userId, // 👈 lấy từ controller, không phải request
                 request.getRoomId(),
                 request.getCheckInAt(),
                 request.getCheckOutAt(),
@@ -98,6 +98,7 @@ public class BookingServiceImpl implements BookingService {
                 booking.getStatus(),
                 booking.getPrice());
     }
+
 
     @Override
     public List<BookingResponse> getAllBookings() {
