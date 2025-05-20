@@ -41,12 +41,17 @@ const updatePayment = async (paymentId, updateData) => {
   return await Payment.findByIdAndUpdate(paymentId, updateData, { new: true });
 };
 
+const findPaymentsByUserIdAndStatus = async (userId, status) => {
+  return await Payment.find({ userId, status }).sort({ createdAt: -1 });
+};
+
 module.exports = {
     createPayment,
     getPaymentById,
     getAllPayments,
     getPaymentsByUserId,
     findByPaymentIntentId,
-    updatePayment
+    updatePayment,
+    findPaymentsByUserIdAndStatus
 };
     

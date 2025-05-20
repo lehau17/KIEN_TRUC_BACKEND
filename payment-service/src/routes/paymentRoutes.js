@@ -24,6 +24,9 @@ router.post('/', paymentController.createPayment);
 // 📌 Lấy danh sách thanh toán theo userId (Áp dụng Rate Limiter)
 router.get('/user/:userId', paymentRateLimiter, paymentController.getPaymentsByUser);
 
+// 📌 Lấy danh sách thanh toán theo userId, status = PENDING_PAYMENT (Áp dụng Rate Limiter)
+router.get('/user/:userId/pending', paymentRateLimiter, paymentController.getPendingPaymentsByUser);
+
 // Xác nhận thanh toán (confirm payment)
 router.post('/confirm-payment', paymentController.confirmPayment);
 

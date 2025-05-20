@@ -326,6 +326,11 @@ async function sendPaymentEvent(payment) {
   }
 }
 
+const getPendingPaymentsByUserId = async (userId) => {
+  if (!userId) throw new Error('Thiếu userId');
+  return await paymentRepository.findPaymentsByUserIdAndStatus(userId, 'PENDING_PAYMENT');
+};
+
 module.exports = {
     processBookingPayment,
     updatePayment,
@@ -337,6 +342,7 @@ module.exports = {
     getBookingsFromBookingService,
     createPaymentIntent,
     confirmPayment,
-    getPaymentIntent
+    getPaymentIntent,
+    getPendingPaymentsByUserId
 
 };
