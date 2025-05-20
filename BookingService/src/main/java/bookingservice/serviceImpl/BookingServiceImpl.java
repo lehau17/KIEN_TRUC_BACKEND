@@ -48,7 +48,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponse createBooking(String userId, BookingRequest request) {
-        logger.info("Creating booking for user {} and room {}", userId, request.getRoomId());
+        logger.info("Tạo booking cho user {} và phòng {} với phương thức thanh toán {}",
+                userId, request.getRoomId(), request.getPaymentMethod());
         validateBookingRequest(request);
 
         // Kiểm tra phòng từ RoomService
@@ -65,30 +66,28 @@ public class BookingServiceImpl implements BookingService {
         }
 
         Booking booking = new Booking(
-                userId, // 👈 lấy từ controller, không phải request
+                userId,
                 request.getRoomId(),
                 request.getCheckInAt(),
                 request.getCheckOutAt(),
                 room.getPrice());
         bookingRepository.save(booking);
 
-        boolean paymentSuccess = processPayment(booking.getId(), room.getPrice(), "CREDIT_CARD");
-        if (paymentSuccess) {
-            booking.confirmBooking();
-            bookingRepository.save(booking);
+        // Gửi sự kiện PENDING tới PaymentService với paymentMethod từ request
+        BookingMessage message = new BookingMessage(
+                booking.getId(),
+                booking.getUserId(),
+                booking.getRoomId(),
+                booking.getPrice(),
+                request.getPaymentMethod(), // Lấy từ request, ví dụ: stripe, momo, cash
+                booking.getStatus().name());
+        rabbitMQProducer.sendMessage("PENDING", message);
 
-            BookingMessage message = new BookingMessage(
-                    booking.getId(), booking.getUserId(), booking.getRoomId(),
-                    booking.getPrice(), "CREDIT_CARD", booking.getStatus().name());
-            rabbitMQProducer.sendMessage("CONFIRM", message);
+        // Lưu vào Redis
+        redisTemplate.delete("bookings:all");
+        redisTemplate.opsForValue().set("booking:" + booking.getId(), booking, 30, TimeUnit.MINUTES);
 
-            redisTemplate.delete("bookings:all");
-            redisTemplate.opsForValue().set("booking:" + booking.getId(), booking, 30, TimeUnit.MINUTES);
-        } else {
-            throw new RuntimeException("Thanh toán thất bại");
-        }
-
-        logger.info("Booking created successfully with id {}", booking.getId());
+        logger.info("Booking được tạo thành công với id {}", booking.getId());
         return new BookingResponse(
                 booking.getId(),
                 booking.getUserId(),
@@ -97,6 +96,20 @@ public class BookingServiceImpl implements BookingService {
                 booking.getCheckOutAt(),
                 booking.getStatus(),
                 booking.getPrice());
+    }
+
+    private void validateBookingRequest(BookingRequest request) {
+        LocalDate now = LocalDate.now();
+        if (request.getCheckInAt().isBefore(now)) {
+            throw new IllegalArgumentException("Thời gian check-in không được trong quá khứ");
+        }
+        if (request.getCheckOutAt().isBefore(request.getCheckInAt()) ||
+                request.getCheckOutAt().isEqual(request.getCheckInAt())) {
+            throw new IllegalArgumentException("Thời gian check-out phải sau check-in");
+        }
+        if (request.getPaymentMethod() == null || request.getPaymentMethod().isBlank()) {
+            throw new IllegalArgumentException("Phương thức thanh toán không được để trống");
+        }
     }
 
 
@@ -148,15 +161,6 @@ public class BookingServiceImpl implements BookingService {
     public boolean confirmBooking(String id) {
         boolean result = updateAndSendMessage(id, BookingStatus.PENDING_PAYMENT, BookingStatus.CONFIRMED, "CONFIRM");
         if (result) {
-            Optional<Booking> bookingOpt = bookingRepository.findById(id);
-            bookingOpt.ifPresent(booking -> {
-                try {
-                    roomServiceClient.updateRoomStatus(booking.getRoomId(), "booked").block();
-                } catch (Exception e) {
-                    logger.error("Failed to update room status for roomId {} during confirmBooking: {}", booking.getRoomId(), e.getMessage());
-                    throw new RuntimeException("Không thể cập nhật trạng thái phòng: " + e.getMessage());
-                }
-            });
             redisTemplate.delete("bookings:all");
             logger.info("Booking {} confirmed", id);
         }
@@ -296,17 +300,6 @@ public class BookingServiceImpl implements BookingService {
     private boolean processPayment(String bookingId, Double amount, String paymentMethod) {
         logger.info("Processing payment for booking {} with amount {}", bookingId, amount);
         return true;
-    }
-
-    private void validateBookingRequest(BookingRequest request) {
-        LocalDate now = LocalDate.now();
-        if (request.getCheckInAt().isBefore(now)) {
-            throw new IllegalArgumentException("Thời gian check-in không được trong quá khứ");
-        }
-        if (request.getCheckOutAt().isBefore(request.getCheckInAt()) ||
-                request.getCheckOutAt().isEqual(request.getCheckInAt())) {
-            throw new IllegalArgumentException("Thời gian check-out phải sau check-in");
-        }
     }
 
     @Override

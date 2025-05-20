@@ -15,12 +15,30 @@ public class BookingRequest {
     @NotNull(message = "Thời gian check-out không được để trống")
     private LocalDate checkOutAt;
 
+    @NotBlank(message = "Phương thức thanh toán không được để trống")
+    private String paymentMethod;
+
     public BookingRequest() {}
 
     public BookingRequest(String roomId, LocalDate checkInAt, LocalDate checkOutAt) {
         this.roomId = roomId;
         this.checkInAt = checkInAt;
         this.checkOutAt = checkOutAt;
+    }
+
+    public BookingRequest(String roomId, LocalDate checkInAt, LocalDate checkOutAt, String paymentMethod) {
+        this.roomId = roomId;
+        this.checkInAt = checkInAt;
+        this.checkOutAt = checkOutAt;
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public String getRoomId() {

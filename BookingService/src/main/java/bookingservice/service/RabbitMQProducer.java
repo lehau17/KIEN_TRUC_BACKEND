@@ -13,7 +13,7 @@ public class RabbitMQProducer {
 
     private final RabbitTemplate rabbitTemplate;
     private final ObjectMapper objectMapper;
-    private final RedisTemplate<String, Object> redisTemplate; // Thêm RedisTemplate
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     public RabbitMQProducer(RabbitTemplate rabbitTemplate, RedisTemplate<String, Object> redisTemplate) {
@@ -24,18 +24,18 @@ public class RabbitMQProducer {
 
     public void sendMessage(String routingKey, Object message) {
         try {
-            // Lưu message vào Redis trước khi gửi
             String messageKey = "message:pending:" + routingKey + ":" + System.currentTimeMillis();
             redisTemplate.opsForValue().set(messageKey, message, 1, TimeUnit.HOURS);
 
             String jsonMessage = objectMapper.writeValueAsString(message);
-            rabbitTemplate.convertAndSend("booking.exchange", routingKey, jsonMessage);
+            String exchange = routingKey.equals("PAYMENT_CONFIRMED") ? "payment.exchange" : "booking.exchange";
+            rabbitTemplate.convertAndSend(exchange, routingKey, jsonMessage);
             System.out.println("Message sent to RabbitMQ: " + jsonMessage);
 
-            // Xóa message khỏi Redis sau khi gửi thành công
             redisTemplate.delete(messageKey);
         } catch (Exception e) {
             System.err.println("Error sending message to RabbitMQ: " + e.getMessage());
+            throw new RuntimeException("Lỗi khi gửi message tới RabbitMQ", e);
         }
     }
 }

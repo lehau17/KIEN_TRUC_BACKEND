@@ -53,6 +53,42 @@ public class BookingController {
         this.jwtUtil = jwtUtil;
     }
 
+//    @RateLimiter(name = "bookingRateLimiter", fallbackMethod = "tooManyRequests")
+//    @PostMapping
+//    public ResponseEntity<ApiResponse<BookingResponse>> createBooking(
+//            @Valid @RequestBody BookingRequest request,
+//            BindingResult result,
+//            @AuthenticationPrincipal UserDetails userDetails) {
+//
+//        logger.info("Received booking request");
+//
+//        if (!StringUtils.hasText(userDetails.getUsername())) {
+//            logger.warn("UserDetails is null or empty – not authenticated");
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                    .body(new ApiResponse<>("Unauthenticated", false, null));
+//        }
+//        String userId = userDetails.getUsername();
+//        logger.info("Authenticated userId: {}", userId);
+//
+//        if (result.hasErrors()) {
+//            String errorMessage = result.getAllErrors().stream()
+//                    .map(ObjectError::getDefaultMessage)
+//                    .collect(Collectors.joining(", "));
+//            logger.warn("Validation errors: {}", errorMessage);
+//            return ResponseEntity.badRequest().body(new ApiResponse<>(errorMessage, false, null));
+//        }
+//
+//        try {
+//            BookingResponse response = bookingService.createBooking(userId, request); // 👈 truyền userId riêng
+//            return ResponseEntity.ok(new ApiResponse<>("Booking created successfully", true, response));
+//        } catch (IllegalArgumentException e) {
+//            logger.warn("Invalid booking request: {}", e.getMessage());
+//            return ResponseEntity.badRequest().body(new ApiResponse<>("Error: " + e.getMessage(), false, null));
+//        } catch (Exception e) {
+//            logger.error("Unexpected error creating booking: {}", e.getMessage());
+//            return ResponseEntity.badRequest().body(new ApiResponse<>("Unexpected error: " + e.getMessage(), false, null));
+//        }
+//    }
     @RateLimiter(name = "bookingRateLimiter", fallbackMethod = "tooManyRequests")
     @PostMapping
     public ResponseEntity<ApiResponse<BookingResponse>> createBooking(
@@ -60,33 +96,34 @@ public class BookingController {
             BindingResult result,
             @AuthenticationPrincipal UserDetails userDetails) {
 
-        logger.info("Received booking request");
+        logger.info("Nhận yêu cầu tạo booking với phương thức thanh toán: {}", request.getPaymentMethod());
 
-        if (!StringUtils.hasText(userDetails.getUsername())) {
-            logger.warn("UserDetails is null or empty – not authenticated");
+        if (userDetails == null || !org.springframework.util.StringUtils.hasText(userDetails.getUsername())) {
+            logger.warn("UserDetails null hoặc rỗng - chưa xác thực");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse<>("Unauthenticated", false, null));
+                    .body(new ApiResponse<>("Chưa xác thực", false, null));
         }
         String userId = userDetails.getUsername();
-        logger.info("Authenticated userId: {}", userId);
+        logger.info("User đã xác thực: {}", userId);
 
         if (result.hasErrors()) {
             String errorMessage = result.getAllErrors().stream()
                     .map(ObjectError::getDefaultMessage)
                     .collect(Collectors.joining(", "));
-            logger.warn("Validation errors: {}", errorMessage);
+            logger.warn("Lỗi validate: {}", errorMessage);
             return ResponseEntity.badRequest().body(new ApiResponse<>(errorMessage, false, null));
         }
 
         try {
-            BookingResponse response = bookingService.createBooking(userId, request); // 👈 truyền userId riêng
-            return ResponseEntity.ok(new ApiResponse<>("Booking created successfully", true, response));
+            BookingResponse response = bookingService.createBooking(userId, request);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    "Tạo booking thành công. Đang chờ thanh toán bằng " + request.getPaymentMethod(), true, response));
         } catch (IllegalArgumentException e) {
-            logger.warn("Invalid booking request: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(new ApiResponse<>("Error: " + e.getMessage(), false, null));
+            logger.warn("Yêu cầu booking không hợp lệ: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(new ApiResponse<>("Lỗi: " + e.getMessage(), false, null));
         } catch (Exception e) {
-            logger.error("Unexpected error creating booking: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(new ApiResponse<>("Unexpected error: " + e.getMessage(), false, null));
+            logger.error("Lỗi không mong muốn khi tạo booking: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(new ApiResponse<>("Lỗi không mong muốn: " + e.getMessage(), false, null));
         }
     }
 
