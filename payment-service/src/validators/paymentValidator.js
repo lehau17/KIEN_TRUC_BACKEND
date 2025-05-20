@@ -15,8 +15,12 @@ const bookingDataSchema = Joi.object({
         'number.positive': 'Amount must be a positive number',
         'any.required': 'Amount is required'
     }),
-    status: Joi.string().valid('pending', 'PENDING', 'PENDING_PAYMENT').required().messages({
-        'any.only': 'Status must be "PENDING_PAYMENT"',
+    paymentMethod: Joi.string().valid('stripe', 'paypal', 'bank').required().messages({
+        'any.only': 'Payment method must be one of: stripe, paypal, bank',
+        'any.required': 'Payment method is required'
+    }),
+    status: Joi.string().lowercase().valid('pending_payment', 'paid', 'cancelled').required().messages({
+        'any.only': 'Status must be one of: pending_payment, paid, cancelled',
         'any.required': 'Status is required'
     })
 });

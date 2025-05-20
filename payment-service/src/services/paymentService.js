@@ -5,7 +5,7 @@ const stripe = require('../config/stripe');
 const redisClient = require('../config/redisClient');
 const { wrapWithBreaker } = require('../config/circuitBreaker');
 const axiosInstance = require('../config/axiosConfig');
-const { v4: uuidv4 } = require('uuid'); 
+const { v4: uuidv4 } = require('uuid');
 const amqp = require('amqplib');
 const CACHE_TTL = 10;
 
@@ -29,7 +29,7 @@ const createPaymentForBooking = async (bookingData) => {
     userId: bookingData.userId,
     amount: bookingData.amount,
     method: bookingData.paymentMethod,
-    status: bookingData.status,             
+    status: bookingData.status,
     paymentIntentId,               // lưu paymentIntentId
     clientSecret,                  // lưu luôn clientSecret
   };
@@ -74,9 +74,9 @@ const confirmPayment = async (clientSecret) => {
   await redisClient.del(`payment:all`);
   await redisClient.del(`payment:booking:${payment.bookingId}`);
 
-   // 6. Gửi event payment đã thanh toán thành công
+  // 6. Gửi event payment đã thanh toán thành công
   await sendPaymentEvent(updatedPayment);
-  
+
   return updatedPayment;
 };
 
@@ -84,7 +84,6 @@ const confirmPayment = async (clientSecret) => {
 const processBookingPayment = async (bookingData) => {
   if (typeof bookingData === 'string') bookingData = JSON.parse(bookingData);
 
-  bookingData.status = bookingData.status.toLowerCase();
   const { error } = bookingDataSchema.validate(bookingData);
   if (error) throw new Error('Validation failed: ' + error.details[0].message);
 
@@ -102,78 +101,77 @@ const processBookingPayment = async (bookingData) => {
 };
 
 const updatePayment = async (bookingData) => {
-    try {
-        if (typeof bookingData === 'string') bookingData = JSON.parse(bookingData);
+  try {
+    if (typeof bookingData === 'string') bookingData = JSON.parse(bookingData);
 
-        bookingData.status = bookingData.status.toLowerCase();
-        const { error } = bookingDataSchema.validate(bookingData);
-        if (error) throw new Error('Validation failed: ' + error.details[0].message);
+    const { error } = bookingDataSchema.validate(bookingData);
+    if (error) throw new Error('Validation failed: ' + error.details[0].message);
 
-        let payment = await Payment.findOne({ bookingId: bookingData.bookingId });
+    let payment = await Payment.findOne({ bookingId: bookingData.bookingId });
 
-        if (payment) {
-            payment.amount = bookingData.amount;
-            payment.method = bookingData.paymentMethod;
-            payment.status = 'paid';
-            await payment.save();
+    if (payment) {
+      payment.amount = bookingData.amount;
+      payment.method = bookingData.paymentMethod;
+      payment.status = 'paid';
+      await payment.save();
 
-            await redisClient.del(`payment:${payment._id}`);
-            await redisClient.del(`payment:booking:${bookingData.bookingId}`);
-            await redisClient.del(`payment:all`);
+      await redisClient.del(`payment:${payment._id}`);
+      await redisClient.del(`payment:booking:${bookingData.bookingId}`);
+      await redisClient.del(`payment:all`);
 
-            console.log(`✅ Payment updated for Booking ID: ${bookingData.bookingId}`);
-            return true;
-        } else {
-            console.log(`⚠️ No payment found for Booking ID: ${bookingData.bookingId}`);
-            return false;
-        }
-    } catch (error) {
-        console.error('❌ Error updating payment:', error.message);
-        throw error;
+      console.log(`✅ Payment updated for Booking ID: ${bookingData.bookingId}`);
+      return true;
+    } else {
+      console.log(`⚠️ No payment found for Booking ID: ${bookingData.bookingId}`);
+      return false;
     }
+  } catch (error) {
+    console.error('❌ Error updating payment:', error.message);
+    throw error;
+  }
 };
 
 const fetchAllPayments = wrapWithBreaker(async () => {
-    const cacheKey = `payment:all`;
-    const cached = await redisClient.get(cacheKey);
-    if (cached) {
-        console.log(`🔁 Cache hit for ${cacheKey}`);
-        return JSON.parse(cached);
-    }
+  const cacheKey = `payment:all`;
+  const cached = await redisClient.get(cacheKey);
+  if (cached) {
+    console.log(`🔁 Cache hit for ${cacheKey}`);
+    return JSON.parse(cached);
+  }
 
-    const payments = await paymentRepository.getAllPayments();
-    await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(payments));
-    return payments;
+  const payments = await paymentRepository.getAllPayments();
+  await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(payments));
+  return payments;
 }, 'fetchAllPayments');
 
 const fetchPaymentById = wrapWithBreaker(async (id) => {
-    const cacheKey = `payment:${id}`;
-    const cached = await redisClient.get(cacheKey);
-    if (cached) {
-        console.log(`🔁 Cache hit for ${cacheKey}`);
-        return JSON.parse(cached);
-    }
+  const cacheKey = `payment:${id}`;
+  const cached = await redisClient.get(cacheKey);
+  if (cached) {
+    console.log(`🔁 Cache hit for ${cacheKey}`);
+    return JSON.parse(cached);
+  }
 
-    const payment = await paymentRepository.getPaymentById(id);
-    if (payment) {
-        await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(payment));
-    }
+  const payment = await paymentRepository.getPaymentById(id);
+  if (payment) {
+    await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(payment));
+  }
 
-    return payment;
+  return payment;
 }, 'fetchPaymentById');
 
 const exportPaymentHTML = wrapWithBreaker(async (id) => {
-    const cacheKey = `payment:export:${id}`;
-    const cached = await redisClient.get(cacheKey);
-    if (cached) {
-        console.log(`🔁 HTML cache hit for ${cacheKey}`);
-        return cached;
-    }
+  const cacheKey = `payment:export:${id}`;
+  const cached = await redisClient.get(cacheKey);
+  if (cached) {
+    console.log(`🔁 HTML cache hit for ${cacheKey}`);
+    return cached;
+  }
 
-    const payment = await paymentRepository.getPaymentById(id);
-    if (!payment) return null;
+  const payment = await paymentRepository.getPaymentById(id);
+  if (!payment) return null;
 
-    const html = `
+  const html = `
         <html>
             <head><title>Payment ${payment._id}</title></head>
             <body>
@@ -187,89 +185,89 @@ const exportPaymentHTML = wrapWithBreaker(async (id) => {
         </html>
     `;
 
-    await redisClient.setEx(cacheKey, CACHE_TTL, html);
-    return html;
+  await redisClient.setEx(cacheKey, CACHE_TTL, html);
+  return html;
 }, 'exportPaymentHTML');
 
 const createPayment = async (paymentData) => {
-    try {
-        const { error } = bookingDataSchema.validate(paymentData);
-        if (error) throw new Error('Validation failed: ' + error.details[0].message);
+  try {
+    const { error } = bookingDataSchema.validate(paymentData);
+    if (error) throw new Error('Validation failed: ' + error.details[0].message);
 
-        const newPayment = new Payment({
-            bookingId: paymentData.bookingId,
-            userId: paymentData.userId,
-            amount: paymentData.amount,
-            method: paymentData.paymentMethod,
-            status: 'unpaid'
-        });
+    const newPayment = new Payment({
+      bookingId: paymentData.bookingId,
+      userId: paymentData.userId,
+      amount: paymentData.amount,
+      method: paymentData.paymentMethod,
+      status: 'unpaid'
+    });
 
-        await newPayment.save();
+    await newPayment.save();
 
-        await redisClient.del(`payment:all`);
-        await redisClient.del(`payment:booking:${paymentData.bookingId}`);
+    await redisClient.del(`payment:all`);
+    await redisClient.del(`payment:booking:${paymentData.bookingId}`);
 
-        console.log('✅ Payment created successfully:', newPayment);
-        return newPayment;
-    } catch (error) {
-        console.error('❌ Error creating payment:', error.message);
-        throw error;
-    }
+    console.log('✅ Payment created successfully:', newPayment);
+    return newPayment;
+  } catch (error) {
+    console.error('❌ Error creating payment:', error.message);
+    throw error;
+  }
 };
 
 const fetchPaymentsByUserId = wrapWithBreaker(async (userId) => {
-    const cacheKey = `payment:user:${userId}`;
-    const cached = await redisClient.get(cacheKey);
-    if (cached) {
-        console.log(`🔁 Cache hit for ${cacheKey}`);
-        return JSON.parse(cached);
-    }
+  const cacheKey = `payment:user:${userId}`;
+  const cached = await redisClient.get(cacheKey);
+  if (cached) {
+    console.log(`🔁 Cache hit for ${cacheKey}`);
+    return JSON.parse(cached);
+  }
 
-    const payments = await paymentRepository.getPaymentsByUserId(userId);
-    if (payments) {
-        await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(payments));
-    }
+  const payments = await paymentRepository.getPaymentsByUserId(userId);
+  if (payments) {
+    await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(payments));
+  }
 
-    return payments;
+  return payments;
 }, 'fetchPaymentsByUserId');
 
 const getBookingsFromBookingService = async () => {
-    const cacheKey = 'bookings:data';  // Cache key cho dữ liệu bookings
-    const cached = await redisClient.get(cacheKey);
+  const cacheKey = 'bookings:data';  // Cache key cho dữ liệu bookings
+  const cached = await redisClient.get(cacheKey);
 
-    if (cached) {
-        console.log(`🔁 Cache hit for ${cacheKey}`);
-        return JSON.parse(cached);  // Trả về dữ liệu từ cache
+  if (cached) {
+    console.log(`🔁 Cache hit for ${cacheKey}`);
+    return JSON.parse(cached);  // Trả về dữ liệu từ cache
+  }
+
+  try {
+    // Gửi request đến Booking Service
+    const response = await axiosInstance.get('/api/bookings');
+    console.log('Raw response:', response.data);  // Log raw response
+
+    // Kiểm tra nếu không có data hoặc data rỗng
+    if (!response.data || !response.data.bookings || response.data.bookings.length === 0) {
+      throw new Error('No bookings data received');
     }
 
-    try {
-        // Gửi request đến Booking Service
-        const response = await axiosInstance.get('/api/bookings');
-        console.log('Raw response:', response.data);  // Log raw response
+    // Lưu vào cache Redis
+    await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(response.data.bookings));
 
-        // Kiểm tra nếu không có data hoặc data rỗng
-        if (!response.data || !response.data.bookings || response.data.bookings.length === 0) {
-            throw new Error('No bookings data received');
-        }
-
-        // Lưu vào cache Redis
-        await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(response.data.bookings));
-
-        console.log('Bookings data:', response.data.bookings);
-        return response.data.bookings;
-    } catch (error) {
-        // Kiểm tra loại lỗi và log thông báo chi tiết
-        if (error.code === 'ECONNREFUSED') {
-            console.error('❌ Connection refused by Booking Service:', error.message);
-        } else if (error.response) {
-            // Lỗi có response từ server
-            console.error(`❌ Error fetching bookings from Booking Service: ${error.response.status} - ${error.response.statusText}`);
-        } else {
-            // Các lỗi không liên quan đến response
-            console.error('❌ Error fetching bookings from Booking Service:', error.message);
-        }
-        throw error;
+    console.log('Bookings data:', response.data.bookings);
+    return response.data.bookings;
+  } catch (error) {
+    // Kiểm tra loại lỗi và log thông báo chi tiết
+    if (error.code === 'ECONNREFUSED') {
+      console.error('❌ Connection refused by Booking Service:', error.message);
+    } else if (error.response) {
+      // Lỗi có response từ server
+      console.error(`❌ Error fetching bookings from Booking Service: ${error.response.status} - ${error.response.statusText}`);
+    } else {
+      // Các lỗi không liên quan đến response
+      console.error('❌ Error fetching bookings from Booking Service:', error.message);
     }
+    throw error;
+  }
 };
 
 const createPaymentIntent = async ({ amount, currency = 'usd', bookingId, userId }) => {
@@ -309,8 +307,8 @@ async function sendPaymentEvent(payment) {
     const connection = await amqp.connect(process.env.RABBITMQ_URL);
     const channel = await connection.createChannel();
 
-    const exchange = 'payment.exchange'; 
-    const routingKey = 'PAYMENT_CONFIRMED'; 
+    const exchange = 'payment.exchange';
+    const routingKey = 'PAYMENT_CONFIRMED';
 
     await channel.assertExchange(exchange, 'topic', { durable: true });
 
@@ -332,17 +330,17 @@ const getPendingPaymentsByUserId = async (userId) => {
 };
 
 module.exports = {
-    processBookingPayment,
-    updatePayment,
-    fetchAllPayments,
-    fetchPaymentById,
-    exportPaymentHTML,
-    createPayment,
-    fetchPaymentsByUserId,
-    getBookingsFromBookingService,
-    createPaymentIntent,
-    confirmPayment,
-    getPaymentIntent,
-    getPendingPaymentsByUserId
+  processBookingPayment,
+  updatePayment,
+  fetchAllPayments,
+  fetchPaymentById,
+  exportPaymentHTML,
+  createPayment,
+  fetchPaymentsByUserId,
+  getBookingsFromBookingService,
+  createPaymentIntent,
+  confirmPayment,
+  getPaymentIntent,
+  getPendingPaymentsByUserId
 
 };
