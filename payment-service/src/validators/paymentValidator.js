@@ -16,7 +16,7 @@ const bookingDataSchema = Joi.object({
         'any.required': 'Amount is required'
     }),
     status: Joi.string().valid('pending', 'PENDING', 'PENDING_PAYMENT').required().messages({
-        'any.only': 'Status must be "pending"',
+        'any.only': 'Status must be "PENDING_PAYMENT"',
         'any.required': 'Status is required'
     })
 });

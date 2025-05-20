@@ -89,7 +89,7 @@ const processBookingPayment = async (bookingData) => {
   if (error) throw new Error('Validation failed: ' + error.details[0].message);
 
   // Chỉ tạo payment nếu booking ở trạng thái pending
-  if (bookingData.status === 'pending') {
+  if (bookingData.status === 'PENDING_PAYMENT') {
     return await createPaymentForBooking(bookingData);
   }
 
