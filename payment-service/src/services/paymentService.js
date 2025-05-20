@@ -29,7 +29,7 @@ const createPaymentForBooking = async (bookingData) => {
     userId: bookingData.userId,
     amount: bookingData.amount,
     method: bookingData.paymentMethod,
-    status: 'pending',              // mặc định pending
+    status: bookingData.status,             
     paymentIntentId,               // lưu paymentIntentId
     clientSecret,                  // lưu luôn clientSecret
   };
@@ -88,7 +88,7 @@ const processBookingPayment = async (bookingData) => {
   const { error } = bookingDataSchema.validate(bookingData);
   if (error) throw new Error('Validation failed: ' + error.details[0].message);
 
-  // Chỉ tạo payment nếu booking ở trạng thái pending
+  // Chỉ tạo payment nếu booking ở trạng thái PENDING_PAYMENT
   if (bookingData.status === 'PENDING_PAYMENT') {
     return await createPaymentForBooking(bookingData);
   }

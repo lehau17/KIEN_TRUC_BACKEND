@@ -7,8 +7,8 @@ const paymentSchema = new mongoose.Schema({
 
   status: { 
     type: String, 
-    enum: ['pending', 'paid', 'failed', 'canceled'],  // trạng thái thanh toán
-    default: 'pending' 
+    enum: ['pending', 'paid', 'failed', 'canceled', 'PENDING_PAYMENT'],  // trạng thái thanh toán
+    default: 'PENDING_PAYMENT' 
   },
   paymentMethod: { type: String, default: 'stripe' }, // ví dụ: stripe, momo, cash, v.v.
 

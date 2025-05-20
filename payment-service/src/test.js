@@ -7,7 +7,7 @@ const bookingEvent = {
   roomId: 'room101', 
   amount: 500,
   paymentMethod: 'credit',
-  status: 'pending',
+  status: 'PENDING_PAYMENT',
 };
 
 async function sendBookingEvent() {

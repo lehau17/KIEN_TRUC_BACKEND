@@ -19,7 +19,7 @@ const bookingsData = {
       "roomId": 'room321',
       "amount": "300",
       "paymentMethod": 'paypal',
-      "status": 'pending',
+      "status": 'PENDING_PAYMENT',
     },
   ],
 };
