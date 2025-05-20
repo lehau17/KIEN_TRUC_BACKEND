@@ -15,7 +15,7 @@ const bookingDataSchema = Joi.object({
         'number.positive': 'Amount must be a positive number',
         'any.required': 'Amount is required'
     }),
-    paymentMethod: Joi.string().valid('credit', 'cash', 'momo', 'vnpay').required().messages({
+    paymentMethod: Joi.string().valid('credit', 'cash', 'momo', 'vnpay', 'stripe').required().messages({
         'any.only': 'Invalid payment method',
         'any.required': 'Payment Method is required'
     }),
