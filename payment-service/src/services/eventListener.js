@@ -10,8 +10,8 @@ const listenToBookingEvents = async () => {
         const channel = await connection.createChannel();
 
         const exchange = 'booking.exchange';
-        const routingKey = 'CONFIRM';
-        const queue = 'confirm.queue';
+        const routingKey = 'PENDING';
+        const queue = 'pending.queue';
 
         await channel.assertExchange(exchange, 'topic', { durable: true });
         await channel.assertQueue(queue, { durable: true });
