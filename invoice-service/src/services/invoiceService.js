@@ -25,6 +25,7 @@ const processBookingPayment = async (bookingData) => {
         const invoiceData = {
             bookingId: bookingData.bookingId,
             userId: bookingData.userId,
+            roomId: bookingData.roomId,
             amount: bookingData.amount,
             paymentMethod: bookingData.paymentMethod,
             status: 'paid',
@@ -147,6 +148,7 @@ const exportInvoiceHTML = wrapWithBreaker(async (id) => {
 
 // ✅ Tạo hóa đơn mới
 const createInvoice = async (invoiceData) => {
+    console.log('Creating invoice with data:', invoiceData);
     try {
         // Kiểm tra và validate dữ liệu
         const { error } = bookingDataSchema.validate(invoiceData);

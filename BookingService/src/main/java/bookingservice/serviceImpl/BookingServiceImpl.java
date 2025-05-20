@@ -71,15 +71,15 @@ public class BookingServiceImpl implements BookingService {
                 request.getCheckInAt(),
                 request.getCheckOutAt(),
                 room.getPrice());
+        booking.setPaymentMethod(request.getPaymentMethod());
         bookingRepository.save(booking);
 
-        // Gửi sự kiện PENDING tới PaymentService với paymentMethod từ request
         BookingMessage message = new BookingMessage(
                 booking.getId(),
                 booking.getUserId(),
                 booking.getRoomId(),
                 booking.getPrice(),
-                request.getPaymentMethod(), // Lấy từ request, ví dụ: stripe, momo, cash
+                request.getPaymentMethod(),
                 booking.getStatus().name());
         rabbitMQProducer.sendMessage("PENDING", message);
 
@@ -229,8 +229,7 @@ public class BookingServiceImpl implements BookingService {
         return result;
     }
 
-    private boolean updateAndSendMessage(String id, BookingStatus requiredStatus, BookingStatus newStatus,
-                                         String action) {
+    private boolean updateAndSendMessage(String id, BookingStatus requiredStatus, BookingStatus newStatus, String action) {
         Optional<Booking> bookingOpt = bookingRepository.findById(id);
         if (bookingOpt.isEmpty()) {
             logger.warn("Booking {} not found", id);
@@ -247,14 +246,18 @@ public class BookingServiceImpl implements BookingService {
         booking.setUpdatedAt(LocalDateTime.now());
         bookingRepository.save(booking);
 
+        String paymentMethod = booking.getPaymentMethod();
+
         BookingMessage message = new BookingMessage(
                 booking.getId(), booking.getUserId(), booking.getRoomId(),
-                booking.getPrice(), "CREDIT_CARD", booking.getStatus().name());
+                booking.getPrice(), paymentMethod, booking.getStatus().name());
+
         rabbitMQProducer.sendMessage(action, message);
 
         redisTemplate.opsForValue().set("booking:" + booking.getId(), booking, 30, TimeUnit.MINUTES);
         return true;
     }
+
 
     @Override
     public List<BookingResponse> getBookingsByDate(LocalDate date, String type) {
