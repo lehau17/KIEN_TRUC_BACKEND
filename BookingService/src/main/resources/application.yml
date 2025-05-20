@@ -16,27 +16,28 @@ spring:
       database: 0
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
-    virtual-host: /
-  amqp:
-    deserialization:
-      trust:
-        all: true
-# rabbitmq server:
 #  rabbitmq:
-#    host: 44.203.85.39
-#    port: 5673
-#    username: admin
-#    password: 1234
+#    host: localhost
+#    port: 5672
+#    username: guest
+#    password: guest
 #    virtual-host: /
-#    amqp:
-#      deserialization:
-#        trust:
-#          all: true
+#  amqp:
+#    deserialization:
+#      trust:
+#        all: true
+  
+# rabbitmq server:
+  rabbitmq:
+    host: 44.203.85.39
+    port: 5673
+    username: admin
+    password: 1234
+    virtual-host: /
+    amqp:
+      deserialization:
+        trust:
+          all: true
 room-service:
   url: http://localhost:5001/api/room
 

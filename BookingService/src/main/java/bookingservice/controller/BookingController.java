@@ -3,6 +3,7 @@ package bookingservice.controller;
 import java.nio.charset.StandardCharsets;
 import bookingservice.dto.BookingRequest;
 import bookingservice.dto.BookingResponse;
+import bookingservice.dto.BookingResponseWithRoom;
 import bookingservice.dto.RoomDTO;
 import bookingservice.entity.ApiResponse;
 import bookingservice.entity.Booking;
@@ -330,21 +331,37 @@ public class BookingController {
     }
 
 
-    @RateLimiter(name = "bookingRateLimiter", fallbackMethod = "tooManyRequests")
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<ApiResponse<List<BookingResponse>>> getBookingsByUserId(@PathVariable String userId) {
+    @GetMapping("/user")
+    public ResponseEntity<ApiResponse<List<BookingResponseWithRoom>>> getBookingsByLoggedInUser(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null || !StringUtils.hasText(userDetails.getUsername())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>("Chưa xác thực", false, null));
+        }
+        String userId = userDetails.getUsername();
+
         try {
             List<BookingResponse> bookings = bookingService.getAllBookings().stream()
                     .filter(b -> b.getUserId().equals(userId))
                     .collect(Collectors.toList());
-            logger.info("Fetched {} bookings for user {}", bookings.size(), userId);
-            return ResponseEntity.ok(new ApiResponse<>("User booking history fetched", true, bookings));
+
+            // Map bookings thành list mở rộng có thêm chi tiết phòng
+            List<BookingResponseWithRoom> result = bookings.stream()
+                    .map(booking -> {
+                        RoomDTO roomDetail = roomServiceClient.getRoomById(booking.getRoomId()).block();
+                        return new BookingResponseWithRoom(booking, roomDetail);
+                    })
+                    .collect(Collectors.toList());
+
+            logger.info("Fetched {} bookings with room details for user {}", result.size(), userId);
+            return ResponseEntity.ok(new ApiResponse<>("User booking history fetched with room details", true, result));
         } catch (Exception e) {
             logger.error("Error fetching bookings for user {}: {}", userId, e.getMessage());
             return ResponseEntity.badRequest()
                     .body(new ApiResponse<>("Unexpected error: " + e.getMessage(), false, null));
         }
     }
+
 
     @RateLimiter(name = "bookingRateLimiter", fallbackMethod = "tooManyRequests")
     @GetMapping("/{id}")
@@ -382,16 +399,16 @@ public class BookingController {
 
 
     @GetMapping("/room-statuses")
-    public ResponseEntity<ApiResponse<Map<String, List<String>>>> getRoomStatusesByDate(@RequestParam("date") LocalDate date) {
+    public ResponseEntity<ApiResponse<Map<String, List<RoomDTO>>>> getRoomStatusesByDate(@RequestParam("date") LocalDate date) {
         try {
-            // Lấy tất cả phòng: bao gồm cả 'available' lẫn 'booked'
+            // Lấy tất cả phòng bao gồm 'available' và 'booked'
             List<RoomDTO> allRooms = roomServiceClient.getRoomsByStatus("available")
                     .concatWith(roomServiceClient.getRoomsByStatus("booked"))
                     .distinct(RoomDTO::getId)
                     .collectList()
                     .block();
 
-            Map<String, List<String>> result = new HashMap<>();
+            Map<String, List<RoomDTO>> result = new HashMap<>();
             result.put("available", new ArrayList<>());
             result.put("waitingCheckin", new ArrayList<>());
             result.put("checkedIn", new ArrayList<>());
@@ -412,11 +429,11 @@ public class BookingController {
                         .anyMatch(b -> b.getStatus() == BookingStatus.CONFIRMED);
 
                 if (hasCheckedIn) {
-                    result.get("checkedIn").add(roomId);
+                    result.get("checkedIn").add(room);
                 } else if (hasConfirmed) {
-                    result.get("waitingCheckin").add(roomId);
+                    result.get("waitingCheckin").add(room);
                 } else {
-                    result.get("available").add(roomId);
+                    result.get("available").add(room);
                 }
             }
 
@@ -429,23 +446,39 @@ public class BookingController {
     }
 
     @RateLimiter(name = "bookingRateLimiter", fallbackMethod = "tooManyRequests")
-    @GetMapping("/user/{userId}/waiting-checkin")
-    public ResponseEntity<ApiResponse<List<BookingResponse>>> getUserBookingsWaitingCheckin(@PathVariable String userId) {
+    @GetMapping("/user/waiting-checkin")
+    public ResponseEntity<ApiResponse<List<BookingResponseWithRoom>>> getUserBookingsWaitingCheckin(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null || !StringUtils.hasText(userDetails.getUsername())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>("Chưa xác thực", false, null));
+        }
+        String userId = userDetails.getUsername();
+
         try {
             List<BookingResponse> bookings = bookingService.getAllBookings().stream()
                     .filter(b -> b.getUserId().equals(userId) && b.getStatus() == BookingStatus.CONFIRMED)
                     .collect(Collectors.toList());
-            logger.info("Fetched {} confirmed bookings for user {}", bookings.size(), userId);
-            return ResponseEntity.ok(new ApiResponse<>("User bookings waiting check-in fetched", true, bookings));
+
+            List<BookingResponseWithRoom> result = bookings.stream()
+                    .map(booking -> {
+                        RoomDTO roomDetail = roomServiceClient.getRoomById(booking.getRoomId()).block();
+                        return new BookingResponseWithRoom(booking, roomDetail);
+                    })
+                    .collect(Collectors.toList());
+
+            logger.info("Fetched {} confirmed bookings with room details for user {}", result.size(), userId);
+            return ResponseEntity.ok(new ApiResponse<>("User bookings waiting check-in fetched with room details", true, result));
         } catch (Exception e) {
             logger.error("Error fetching waiting check-in bookings for user {}: {}", userId, e.getMessage());
             return ResponseEntity.badRequest()
                     .body(new ApiResponse<>("Unexpected error: " + e.getMessage(), false, null));
         }
     }
+
     @RateLimiter(name = "bookingRateLimiter", fallbackMethod = "tooManyRequests")
     @GetMapping("/room/{roomId}/waiting-checkin")
-    public ResponseEntity<ApiResponse<BookingResponse>> getWaitingCheckinBooking(
+    public ResponseEntity<ApiResponse<BookingResponseWithRoom>> getWaitingCheckinBooking(
             @PathVariable String roomId,
             @RequestParam("date") LocalDate date) {
         try {
@@ -455,7 +488,12 @@ public class BookingController {
                             && b.getCheckInAt().equals(date))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Không có đơn CONFIRMED nào cho phòng này trong ngày."));
-            return ResponseEntity.ok(new ApiResponse<>("Booking waiting checkin fetched", true, booking));
+
+            RoomDTO roomDetail = roomServiceClient.getRoomById(roomId).block();
+
+            BookingResponseWithRoom result = new BookingResponseWithRoom(booking, roomDetail);
+
+            return ResponseEntity.ok(new ApiResponse<>("Booking waiting checkin fetched with room details", true, result));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>("Error: " + e.getMessage(), false, null));
         } catch (Exception e) {
