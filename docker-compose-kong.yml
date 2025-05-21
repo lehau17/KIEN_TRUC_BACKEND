@@ -78,6 +78,7 @@ services:
   user-service:
     container_name: user-service
     build: ./user-service-v2
+    image: lehau17/user-service:latest
     ports:
       - '5000:5000'
     networks:
@@ -103,6 +104,7 @@ services:
   room-service:
     container_name: room-service
     build: ./room-service
+    image: lehau17/room-service:latest
     ports:
       - '5001:5001'
     networks:
@@ -122,6 +124,7 @@ services:
   payment-service:
     container_name: payment-service
     build: ./payment-service
+    image: lehau17/payment-service:latest
     ports:
       - '5959:5959'
     networks:
@@ -143,6 +146,7 @@ services:
   notify-service:
     container_name: notify-service
     build: ./notify-service
+    image: lehau17/notify-service:latest
     ports:
       - '5005:5005'
     networks:
@@ -159,6 +163,7 @@ services:
   upload-service:
     container_name: upload-service
     build: ./upload-service
+    image: lehau17/upload-service:latest
     ports:
       - '9999:9999'
     networks:
@@ -172,6 +177,7 @@ services:
   invoice-service:
     container_name: invoice-service
     build: ./invoice-service
+    image: lehau17/invoice-service:latest
     ports:
       - '5004:5004'
     networks:
@@ -220,6 +226,7 @@ services:
   booking-service:
     container_name: booking-service
     build: ./BookingService
+    image: lehau17/booking-service:latest
     ports:
       - '8085:8080'
     networks:
