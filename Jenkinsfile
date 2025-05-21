@@ -18,8 +18,8 @@ pipeline {
       steps {
         sh '''
           echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin
-          docker compose -f $COMPOSE_FILE build
-          docker compose -f $COMPOSE_FILE push
+          docker-compose -f $COMPOSE_FILE build
+          docker-compose -f $COMPOSE_FILE push
         '''
       }
     }
