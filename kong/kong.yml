@@ -15,6 +15,82 @@ plugins:
       max_age: 3600
 
 services:
+  - name: payment-service
+    url: http://payment-service:5959
+    routes:
+      - name: get-payments
+        paths: ["/api/payment"]
+        methods: ["GET", "OPTIONS"]
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 10
+              limit_by: ip
+              policy: local
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: get-payment-by-id
+        paths: ["/api/payment/[^/]+$"]
+        methods: ["GET", "OPTIONS"]
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 10
+              limit_by: ip
+              policy: local
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: get-payments-by-user
+        paths: ["/api/payment/user/[^/]+$"]
+        methods: ["GET", "OPTIONS"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: get-pending-payments
+        paths: ["/api/payment/user/[^/]+/pending"]
+        methods: ["GET", "OPTIONS"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: confirm-payment
+        paths: ["/api/payment/confirm-payment"]
+        methods: ["POST", "OPTIONS"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: get-payment-intent
+        paths: ["/api/payment/get-payment-intent"]
+        methods: ["POST", "OPTIONS"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
+      - name: export-payment
+        paths: ["/api/payment/[^/]+/export"]
+        methods: ["GET", "OPTIONS"]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify: [exp]
+
   - name: upload-service
     url: http://upload-service:9999
     routes:
