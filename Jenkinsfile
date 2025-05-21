@@ -28,14 +28,14 @@ pipeline {
     stage('Deploy to VPS') {
       steps {
         sshagent (credentials: ['vps-ssh-key']) {
-          sh '''
-            ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << 'EOF'
+          sh """
+            ssh -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} <<EOF
               cd /home/ubuntu/be/KIEN_TRUC_BACKEND
               git pull --rebase origin develop
               docker compose -f docker-compose-kong.yml pull
               docker compose -f docker-compose-kong.yml up -d
             EOF
-          '''
+          """
         }
       }
     }
