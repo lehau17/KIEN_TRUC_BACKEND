@@ -78,6 +78,7 @@ services:
   user-service:
     container_name: user-service
     build: ./user-service-v2
+    image: lehau17/user-service:latest
     ports:
       - '5000:5000'
     networks:
@@ -103,6 +104,7 @@ services:
   room-service:
     container_name: room-service
     build: ./room-service
+    image: lehau17/room-service:latest
     ports:
       - '5001:5001'
     networks:
@@ -114,15 +116,37 @@ services:
       REDIS_PASSWORD: ""
       RATE_LIMIT_PUBLIC: 3
       USER_SERVICE_URL: http://user-service:5000
-
     depends_on:
       - mongo
       - redis
 
 
+  payment-service:
+    container_name: payment-service
+    build: ./payment-service
+    image: lehau17/payment-service:latest
+    ports:
+      - '5959:5959'
+    networks:
+      - kong-network
+    environment:
+      PORT: 5959
+      MONGO_URI: mongodb://mongo:27017/paymentService
+      RABBITMQ_URL: amqp://admin:1234@rabbitmq:5672
+      QUEUE_NAME: confirm.queue
+      RABBITMQ_EXCHANGE: booking.exchange
+      REDIS_URL: redis://redis:6379
+
+    depends_on:
+      - mongo
+      - redis
+      - rabbitmq
+
+
   notify-service:
     container_name: notify-service
     build: ./notify-service
+    image: lehau17/notify-service:latest
     ports:
       - '5005:5005'
     networks:
@@ -139,6 +163,7 @@ services:
   upload-service:
     container_name: upload-service
     build: ./upload-service
+    image: lehau17/upload-service:latest
     ports:
       - '9999:9999'
     networks:
@@ -149,27 +174,28 @@ services:
       - redis
 
 
-  # invoice-service:
-  #   container_name: invoice-service
-  #   build: ./invoice-service
-  #   ports:
-  #     - '5004:5004'
-  #   networks:
-  #     - kong-network
-  #   environment:
-  #     PORT: 5004
-  #     MONGO_URI: mongodb://mongo:27017/invoiceService
-  #     RABBITMQ_URL: amqp://admin:1234@rabbitmq:5672
-  #     RABBITMQ_QUEUE: booking_queue
-  #     REDIS_URL: redis://redis:6379
-  #     QUEUE_NAME: confirm.queue
-  #     RABBITMQ_EXCHANGE: booking.exchange
-  #     RABBITMQ_DEFAULT_VHOST: /
+  invoice-service:
+    container_name: invoice-service
+    build: ./invoice-service
+    image: lehau17/invoice-service:latest
+    ports:
+      - '5004:5004'
+    networks:
+      - kong-network
+    environment:
+      PORT: 5004
+      MONGO_URI: mongodb://mongo:27017/invoiceService
+      RABBITMQ_URL: amqp://admin:1234@rabbitmq:5672
+      RABBITMQ_QUEUE: booking_queue
+      REDIS_URL: redis://redis:6379
+      QUEUE_NAME: confirm.queue
+      RABBITMQ_EXCHANGE: booking.exchange
+      RABBITMQ_DEFAULT_VHOST: /
 
-  #   depends_on:
-  #     - rabbitmq
-  #     - mongo
-  #     - redis
+    depends_on:
+      - rabbitmq
+      - mongo
+      - redis
   mongo:
     image: mongo:6
     networks:
@@ -197,24 +223,25 @@ services:
     networks:
       - kong-network
 
-  # booking-service:
-  #   container_name: booking-service
-  #   build: ./BookingService
-  #   ports:
-  #     - '8085:8080'
-  #   networks:
-  #     - kong-network
-  #   environment:
-  #     SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/booking-service
-  #     RABBITMQ_HOST: rabbitmq
-  #     RABBITMQ_PORT: 5672
-  #     RABBITMQ_USERNAME: admin
-  #     RABBITMQ_PASSWORD: 1234
-  #     SERVER_PORT: 8080
-  #   depends_on:
-  #     - mongo
-  #     - rabbitmq
-  #     - redis
+  booking-service:
+    container_name: booking-service
+    build: ./BookingService
+    image: lehau17/booking-service:latest
+    ports:
+      - '8085:8080'
+    networks:
+      - kong-network
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/booking-service
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: admin
+      RABBITMQ_PASSWORD: 1234
+      SERVER_PORT: 8080
+    depends_on:
+      - mongo
+      - rabbitmq
+      - redis
 
     # Node Exporter để thu thập metrics máy chủ
   # node-exporter:

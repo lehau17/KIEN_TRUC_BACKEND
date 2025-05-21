@@ -95,13 +95,10 @@ services:
       - tyk-network
     environment:
       MONGO_URI: 'mongodb://mongo:27017/room-service'
-      REDIS_HOST: localhost
+      REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ""
       RATE_LIMIT_PUBLIC: 3
-
-
-
       # fix
       USER_SERVICE_URL: http://user-service:5000
 

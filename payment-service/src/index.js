@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const {mainRouter} = require("./routes");
+const { mainRouter } = require("./routes");
 const { connectDB } = require('./config/db');
 const { listenToBookingEvents } = require('./services/eventListener');
 const paymentController = require('./controllers/paymentController');
@@ -9,7 +9,7 @@ const app = express();
 
 
 app.use(cors({
-  origin: 'http://127.0.0.1:5500',
+    origin: '*',
 }));
 
 app.use(express.json());
@@ -21,8 +21,8 @@ const startServer = async () => {
     await connectDB();
     await listenToBookingEvents();
 
-    
-    const PORT = process.env.PORT || 5003;
+
+    const PORT = process.env.PORT || 5959;
     app.listen(PORT, () => console.log(`Payment Service running on port ${PORT}`));
 };
 

@@ -33,7 +33,7 @@ COPY package.json yarn.lock ./
 RUN yarn install
 
 COPY . .
-COPY ./.env ./.env
+# COPY ./.env ./.env
 
 
 RUN yarn build
