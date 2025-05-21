@@ -15,6 +15,39 @@ plugins:
       max_age: 3600
 
 services:
+  - name: upload-service
+    url: http://upload-service:9999
+    routes:
+      - name: upload-files-s3
+        paths: ["/api/upload/s3-multiple"]
+        methods: ["POST", "OPTIONS"]
+        strip_path: false
+
+      - name: upload-file-s3
+        paths: ["/api/upload/s3"]
+        methods: ["POST", "OPTIONS"]
+        strip_path: false
+
+      - name: upload-file-local
+        paths: ["/api/upload/local"]
+        methods: ["POST", "OPTIONS"]
+        strip_path: false
+
+      - name: upload-file-mp3
+        paths: ["/api/upload/mp3"]
+        methods: ["POST", "OPTIONS"]
+        strip_path: false
+
+    plugins:
+      - name: cors
+        config:
+          origins: ["*"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+          headers: ["Authorization", "Content-Type", "Accept"]
+          exposed_headers: ["Authorization"]
+          credentials: true
+          max_age: 3600
+
   # --- user-service ---
   - name: user-service
     url: http://user-service:5000
@@ -176,7 +209,7 @@ services:
         strip_path: false
 
       - name: update-room
-        paths: ["/api/room/[^/]+$"]
+        paths: ["/api/room/[^/]+$", "~/api/room/[^/]+$"]
         methods: ["PUT", "OPTIONS"]
         strip_path: false
 

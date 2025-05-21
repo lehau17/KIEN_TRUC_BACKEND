@@ -22,9 +22,9 @@ export class UploadController {
         private readonly uploadService: UploadService,
         private readonly configService: ConfigService,
     ) {
-        this.url_cloudfront = configService.get<string>('AWS_CLOUD_FRONT', "http://localhost:9000");
+        this.url_cloudfront = configService.get<string>('AWS_CLOUD_FRONT', "http://minio:9000");
         this.s3 = new S3Client({
-            endpoint: 'http://localhost:9000',
+            endpoint: 'http://minio:9000',
             region: 'us-east-1',
             credentials: {
                 accessKeyId: 'admin',
@@ -56,6 +56,7 @@ export class UploadController {
             const urls = await Promise.all(uploadPromises);
             return { urls, message: 'Files uploaded to S3 successfully' };
         } catch (error) {
+            console.log(error)
             throw new InternalServerErrorException('Failed to upload files to S3');
         }
     }
@@ -104,8 +105,9 @@ export class UploadController {
         try {
             const command = new PutObjectCommand(params);
             await this.s3.send(command);
-            return this.url_cloudfront + `/${bucket}` + '/' + key;
+            return "http://localhost:9000" + `/${bucket}` + '/' + key;
         } catch (e) {
+            console.log(e)
             throw new InternalServerErrorException('S3 upload failed');
         }
     }

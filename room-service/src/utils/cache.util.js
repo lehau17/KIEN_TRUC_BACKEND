@@ -1,4 +1,4 @@
-const {redis} = require("../config/redis.config");
+const { redis } = require("../config/redis.config");
 
 
 // Key : key mình set dô redis
@@ -7,8 +7,8 @@ const {redis} = require("../config/redis.config");
 async function getOrSetCache(
     key, // key cua redis
     fetchFunction, // ham lay du lieu tu database
-     ttl = 300 // thoi gian song cua redis
-    ) {
+    ttl = 5 // thoi gian song cua redis
+) {
     // 1. lay du lieu o redis
     const duLieuORedis = await redis.get(key);
     // Nếu có cache, trả về cho người dùng => dung chuong tirnh
@@ -19,7 +19,7 @@ async function getOrSetCache(
     // Nếu không có, gọi hàm lấy data
     const freshData = await fetchFunction();
 
-    
+
     // lấy đc data set lại vào cache
     if (freshData != null) {
         await redis.set(key, JSON.stringify(freshData), 'EX', ttl); // TTL in seconds
