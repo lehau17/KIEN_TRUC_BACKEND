@@ -17,7 +17,7 @@ public interface BookingRepository extends MongoRepository<Booking, String> {
 
     List<Booking> findByCheckOutAt(LocalDate checkOutAt);
 
-    @Query("{'roomId': ?0, 'status': ?1, $and: [ {'checkInAt': {$lte: ?3}}, {'checkOutAt': {$gte: ?2}} ]}")
+    @Query("{ 'roomId': ?0, 'status': ?1, 'checkInAt': { '$lt': ?3 }, 'checkOutAt': { '$gt': ?2 } }")
     List<Booking> findOverlappingBookings(
             String roomId, BookingStatus status, LocalDate checkInAt, LocalDate checkOutAt);
 }

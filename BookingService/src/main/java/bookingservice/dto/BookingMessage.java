@@ -12,6 +12,9 @@ public class BookingMessage implements Serializable {
     private String paymentMethod;
     private String status;
 
+    public BookingMessage() {
+    }
+
     public BookingMessage(String bookingId, String userId, String roomId, Double amount, String paymentMethod, String status) {
         this.bookingId = bookingId;
         this.userId = userId;

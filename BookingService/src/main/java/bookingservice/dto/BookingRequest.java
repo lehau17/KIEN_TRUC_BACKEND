@@ -2,14 +2,10 @@ package bookingservice.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDate;
 
 public class BookingRequest {
-    @NotBlank(message = "User ID không được để trống")
-    private String userId;
-
     @NotBlank(message = "Room ID không được để trống")
     private String roomId;
 
@@ -19,26 +15,30 @@ public class BookingRequest {
     @NotNull(message = "Thời gian check-out không được để trống")
     private LocalDate checkOutAt;
 
-    @NotNull(message = "Giá phòng không được để trống")
-    @Positive(message = "Giá phòng phải lớn hơn 0")
-    private Double price;
+    @NotBlank(message = "Phương thức thanh toán không được để trống")
+    private String paymentMethod;
 
     public BookingRequest() {}
 
-    public BookingRequest(String userId, String roomId, LocalDate checkInAt, LocalDate checkOutAt, Double price) {
-        this.userId = userId;
+    public BookingRequest(String roomId, LocalDate checkInAt, LocalDate checkOutAt) {
         this.roomId = roomId;
         this.checkInAt = checkInAt;
         this.checkOutAt = checkOutAt;
-        this.price = price;
     }
 
-    public String getUserId() {
-        return userId;
+    public BookingRequest(String roomId, LocalDate checkInAt, LocalDate checkOutAt, String paymentMethod) {
+        this.roomId = roomId;
+        this.checkInAt = checkInAt;
+        this.checkOutAt = checkOutAt;
+        this.paymentMethod = paymentMethod;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public String getRoomId() {
@@ -63,13 +63,5 @@ public class BookingRequest {
 
     public void setCheckOutAt(LocalDate checkOutAt) {
         this.checkOutAt = checkOutAt;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
     }
 }

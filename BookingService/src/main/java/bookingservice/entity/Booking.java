@@ -19,6 +19,7 @@ public class Booking {
 
     @Field("checkOutAt")
     private LocalDate checkOutAt;
+    private String paymentMethod;
     private BookingStatus status;
     private Double price;
     private LocalDateTime createdAt;
@@ -33,6 +34,14 @@ public class Booking {
         this.status = BookingStatus.PENDING_PAYMENT;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public void confirmBooking() {

@@ -1,0 +1,31 @@
+{
+  "name": "jwt-temp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon src/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "amqplib": "^0.10.8",
+    "axios": "^1.9.0",
+    "axios-retry": "^4.5.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "dotnet": "^1.1.4",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.12.1",
+    "nodemon": "^3.1.10",
+    "opossum": "^8.4.0",
+    "redis": "^4.7.0",
+    "stripe": "^18.1.0",
+    "uuid": "^11.1.0"
+  }
+}

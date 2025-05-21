@@ -63,4 +63,34 @@ const listenToBookingEvents = async () => {
     }
 };
 
-module.exports = { listenToBookingEvents };
+const listenToPaymentEvents = async () => {
+  try {
+    const connection = await amqp.connect(process.env.RABBITMQ_URL);
+    const channel = await connection.createChannel();
+
+    const exchange = 'payment.exchange';
+    const queue = 'invoice_payment_queue'; // tên queue riêng
+    const routingKey = 'PAYMENT_CONFIRMED';
+
+    await channel.assertExchange(exchange, 'topic', { durable: true });
+    await channel.assertQueue(queue, { durable: true });
+    await channel.bindQueue(queue, exchange, routingKey);
+
+    console.log('📥 [Invoice Service] Listening for PAYMENT_CONFIRMED events...');
+
+    channel.consume(queue, async (msg) => {
+      if (msg !== null) {
+        const paymentData = JSON.parse(msg.content.toString());
+        console.log('✅ [Invoice Service] Received PAYMENT_CONFIRMED:', paymentData);
+
+        // Có thể xử lý thêm tại đây nếu cần sau này
+
+        channel.ack(msg); // xác nhận đã xử lý
+      }
+    });
+  } catch (err) {
+    console.error('❌ [Invoice Service] RabbitMQ listener error:', err.message);
+  }
+};
+
+module.exports = { listenToBookingEvents, listenToPaymentEvents };

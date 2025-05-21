@@ -1,0 +1,98 @@
+spring:
+  application:
+    name: BookingService
+  main:
+    allow-bean-definition-overriding: true
+  server:
+    port: 8080
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: Hotels
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+#  rabbitmq:
+#    host: localhost
+#    port: 5672
+#    username: guest
+#    password: guest
+#    virtual-host: /
+#  amqp:
+#    deserialization:
+#      trust:
+#        all: true
+  
+# rabbitmq server:
+  rabbitmq:
+    host: 44.203.85.39
+    port: 5673
+    username: admin
+    password: 1234
+    virtual-host: /
+    amqp:
+      deserialization:
+        trust:
+          all: true
+room-service:
+  url: http://localhost:5001/api/room
+
+# Cấu hình Resilience4J Rate Limiter
+resilience4j:
+  ratelimiter:
+    instances:
+      bookingRateLimiter:
+        limitForPeriod: 5
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
+      bookingConfirmLimiter:
+        limitForPeriod: 3
+        limitRefreshPeriod: 15s
+        timeoutDuration: 0
+      bookingCheckinLimiter:
+        limitForPeriod: 2
+        limitRefreshPeriod: 20s
+        timeoutDuration: 0
+      bookingCheckoutLimiter:
+        limitForPeriod: 2
+        limitRefreshPeriod: 20s
+        timeoutDuration: 0
+      bookingPagedLimiter:
+        limitForPeriod: 5
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
+      bookingByDateLimiter:
+        limitForPeriod: 5
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
+      bookingAvailabilityLimiter:
+        limitForPeriod: 5
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
+      bookingCancelLimiter:
+        limitForPeriod: 3
+        limitRefreshPeriod: 15s
+        timeoutDuration: 0
+
+# Cấu hình logging
+logging:
+  level:
+    root: INFO
+    io.github.resilience4j: DEBUG
+    org.springframework: INFO
+    org.springframework.security: DEBUG
+
+# Cấu hình Eureka
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: false
+    register-with-eureka: false
+jwt:
+  secret: sndkjbvfskdvfhjsvdfjhvsdjfhvsdkjfhvsjdhfvskdhvfkjshvdfhjk
+  expiration: 86400000
