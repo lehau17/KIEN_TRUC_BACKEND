@@ -12,9 +12,8 @@ env:
   COMPOSE_FILE: docker-compose-kong.yml
 
 jobs:
-  build-and-deploy:
+  build-push:
     runs-on: ubuntu-latest
-
     steps:
       - name: ✅ Checkout source
         uses: actions/checkout@v4
@@ -33,6 +32,11 @@ jobs:
           docker compose -f $COMPOSE_FILE build
           docker compose -f $COMPOSE_FILE push
 
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-push
+
+    steps:
       - name: 🧾 Prepare SSH key
         run: |
           mkdir -p ~/.ssh
@@ -46,8 +50,9 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.VPS_HOST }} << 'EOF'
             cd /home/ubuntu/be/KIEN_TRUC_BACKEND
-            git pull origin develop
-            sudo docker compose -f docker-compose-kong.yml pull
-            sudo docker compose -f docker-compose-kong.yml up -d \
+
+            git pull --rebase origin develop
+            sudo docker-compose -f docker-compose-kong.yml pull
+            sudo docker-compose -f docker-compose-kong.yml up -d \
               kong user-service postgres redis
           EOF

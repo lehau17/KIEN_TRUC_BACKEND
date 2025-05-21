@@ -324,9 +324,9 @@ async function sendPaymentEvent(payment) {
   }
 }
 
-const getPendingPaymentsByUserId = async (userId) => {
-  if (!userId) throw new Error('Thiếu userId');
-  return await paymentRepository.findPaymentsByUserIdAndStatus(userId, 'PENDING_PAYMENT');
+const getclientSecretByBookingId = async (bookingId) => {
+  if (!bookingId) throw new Error('Thiếu bookingId');
+  return await paymentRepository.findClientSecretByBookingIdAndStatus(bookingId, 'PENDING_PAYMENT');
 };
 
 module.exports = {
@@ -341,6 +341,6 @@ module.exports = {
   createPaymentIntent,
   confirmPayment,
   getPaymentIntent,
-  getPendingPaymentsByUserId
+  getclientSecretByBookingId
 
 };
