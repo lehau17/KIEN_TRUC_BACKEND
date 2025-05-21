@@ -18,8 +18,8 @@ pipeline {
       steps {
         sh '''
           echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin
-          docker-compose -f $COMPOSE_FILE build
-          docker-compose -f $COMPOSE_FILE push
+          docker compose -f $COMPOSE_FILE build
+          docker compose -f $COMPOSE_FILE push
         '''
       }
     }
@@ -31,8 +31,8 @@ pipeline {
             ssh -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} << 'EOF'
               cd /home/ubuntu/be/KIEN_TRUC_BACKEND
               git pull --rebase origin develop
-              docker-compose -f docker-compose-kong.yml pull
-              docker-compose -f docker-compose-kong.yml up -d
+              docker compose -f docker-compose-kong.yml pull
+              docker compose -f docker-compose-kong.yml up -d
             EOF
           """
         }
