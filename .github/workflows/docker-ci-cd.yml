@@ -47,7 +47,7 @@ jobs:
           ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.VPS_HOST }} << 'EOF'
             cd /home/ubuntu/be/KIEN_TRUC_BACKEND
             git pull origin develop
-            docker-compose -f docker-compose-kong.yml pull
-            docker-compose -f docker-compose-kong.yml -d \
+            sudo docker compose -f docker-compose-kong.yml pull
+            sudo docker compose -f docker-compose-kong.yml -d \
               kong user-service postgres redis
           EOF
