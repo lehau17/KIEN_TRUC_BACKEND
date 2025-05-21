@@ -6,15 +6,25 @@ const { errorMessages, detailedErrorMessages } = require("./src/utils/errorValid
 const limiter = require("./src/middlewares/rate_limiter.middleware")
 const timeout = require('connect-timeout');
 require('dotenv').config()
-
+const cors = require("cors")
 const app = express()
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+
+const corsOptions = {
+    origin: '*',
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Authorization", "Content-Type", "Accept"],
+    exposedHeaders: ["Authorization"],
+    credentials: true
+};
+
+app.use(cors(corsOptions));
 // rate limiter
-app.use(limiter)    
+app.use(limiter)
 // time limiter
-app.use(timeout('5s', {respond: true}));
+app.use(timeout('5s', { respond: true }));
 
 
 app.use((req, res, next) => {

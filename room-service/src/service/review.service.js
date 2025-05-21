@@ -63,7 +63,7 @@ class ReviewService {
     }
 
     static async xoaReview(reviewId, userId) {
-        const review = await Review.findOne({ _id: reviewId, userId });
+        const review = await Review.findOne({ _id: reviewId, userId: userId + "" });
         if (!review) {
             throw new ErrorWithStatus("Không tìm thấy hoặc không có quyền xoá!", 403);
         }

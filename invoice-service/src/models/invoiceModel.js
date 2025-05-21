@@ -11,7 +11,7 @@ const invoiceSchema = new mongoose.Schema({
     },
     roomId: {
         type: String,
-        required: [true, 'Room ID is required']
+        // required: [true, 'Room ID is required']
     },
     amount: {
         type: Number,

@@ -6,7 +6,7 @@ const { bookingDataSchema } = require('../validators/invoiceValidator');
 
 const listenToBookingEvents = async () => {
     try {
-        const connection = await amqp.connect(process.env.RABBITMQ_URL);
+        const connection = await amqp.connect(process.env.RABBITMQ_URL || "amqp://admin:1234@rabbitmq:5672");
         const channel = await connection.createChannel();
 
         const exchange = 'booking.exchange';

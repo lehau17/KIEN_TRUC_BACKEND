@@ -31,7 +31,7 @@ export class PermissionsService implements OnModuleInit {
                     fullname: 'ADMIN',
                     username: 'admin',
                     password:
-                        '$2b$10$RwK1RQj/6dStZYSmYR8m1e4NtzYCevOSPrGHHvoO6i0RLT8NaPSmO',
+                        '$2b$10$SHOB1BA0XvtMmjPf5V0ziOJzSW71eQHkNKy71ZStEbSkx4uDl6OGC',
                     role: {
                         connect: {
                             id: admin.id,
@@ -45,7 +45,7 @@ export class PermissionsService implements OnModuleInit {
                     fullname: 'USER',
                     username: 'user',
                     password:
-                        '$2b$10$RwK1RQj/6dStZYSmYR8m1e4NtzYCevOSPrGHHvoO6i0RLT8NaPSmO',
+                        '$2b$10$SHOB1BA0XvtMmjPf5V0ziOJzSW71eQHkNKy71ZStEbSkx4uDl6OGC',
                     role: {
                         connect: {
                             id: user.id,

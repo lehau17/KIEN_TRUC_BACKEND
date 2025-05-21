@@ -6,8 +6,48 @@ plugins:
     config:
       minute: 10
       policy: local
+  - name: cors
+    config:
+      origins: ["*"]
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+      headers: ["Authorization", "Content-Type", "Accept"]
+      credentials: true
+      max_age: 3600
 
 services:
+  - name: upload-service
+    url: http://upload-service:9999
+    routes:
+      - name: upload-files-s3
+        paths: ["/api/upload/s3-multiple"]
+        methods: ["POST", "OPTIONS"]
+        strip_path: false
+
+      - name: upload-file-s3
+        paths: ["/api/upload/s3"]
+        methods: ["POST", "OPTIONS"]
+        strip_path: false
+
+      - name: upload-file-local
+        paths: ["/api/upload/local"]
+        methods: ["POST", "OPTIONS"]
+        strip_path: false
+
+      - name: upload-file-mp3
+        paths: ["/api/upload/mp3"]
+        methods: ["POST", "OPTIONS"]
+        strip_path: false
+
+    plugins:
+      - name: cors
+        config:
+          origins: ["*"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+          headers: ["Authorization", "Content-Type", "Accept"]
+          exposed_headers: ["Authorization"]
+          credentials: true
+          max_age: 3600
+
   # --- user-service ---
   - name: user-service
     url: http://user-service:5000
@@ -97,7 +137,7 @@ services:
 
       - name: get-employees
         paths: ["/api/employees"]
-        methods: ["GET"]
+        methods: ["GET", "OPTIONS", "POST"]
         strip_path: false
         plugins:
           - name: jwt
@@ -106,7 +146,7 @@ services:
 
       - name: get-me
         paths: ["/api/employees/me"]
-        methods: ["GET"]
+        methods: ["GET", "OPTIONS"]
         strip_path: false
         plugins:
           - name: jwt
@@ -115,7 +155,7 @@ services:
 
       - name: update-me
         paths: ["/api/employees/me"]
-        methods: ["PATCH"]
+        methods: ["PATCH", "OPTIONS"]
         strip_path: false
         plugins:
           - name: jwt
@@ -124,7 +164,7 @@ services:
 
       - name: update-employee
         paths: ["~/api/employees/\\d+$"]
-        methods: ["PATCH"]
+        methods: ["PATCH", "OPTIONS"]
         strip_path: false
         plugins:
           - name: jwt
@@ -133,7 +173,7 @@ services:
 
       - name: delete-me
         paths: ["/api/employees/me"]
-        methods: ["DELETE"]
+        methods: ["DELETE", "OPTIONS"]
         strip_path: false
         plugins:
           - name: jwt
@@ -142,72 +182,85 @@ services:
 
       - name: delete-employee
         paths: ["~/api/employees/\\d+$"]
-        methods: ["DELETE"]
+        methods: ["DELETE", "OPTIONS"]
         strip_path: false
         plugins:
           - name: jwt
             config:
               claims_to_verify: [exp]
 
-  # --- room-service ---
+
   - name: room-service
     url: http://room-service:5001
     routes:
       - name: get-room-list
-        paths: ["/api/room$", "/api/room"]
-        methods: ["GET"]
+        paths: ["/api/room"]
+        methods: ["GET", "OPTIONS"]
         strip_path: false
-
 
       - name: create-room
-        paths: ["/api/room$", "/api/room"]
-        methods: ["POST"]
+        paths: ["/api/room"]
+        methods: ["POST", "OPTIONS"]
         strip_path: false
-        plugins:
-          - name: jwt
-            config:
-              claims_to_verify: [exp]
 
       - name: get-room-by-id
-        paths: ["~/api/room/[^/]+$"]
-        methods: ["GET"]
+        paths: ["/api/room/[^/]+$"]
+        methods: ["GET", "OPTIONS"]
         strip_path: false
 
       - name: update-room
-        paths: ["~/api/room/[^/]+$"]
-        methods: ["PUT"]
+        paths: ["/api/room/[^/]+$", "~/api/room/[^/]+$"]
+        methods: ["PUT", "OPTIONS"]
         strip_path: false
-        plugins:
-          - name: jwt
-            config:
-              claims_to_verify: [exp]
 
       - name: delete-room
-        paths: ["~/api/room/[^/]+$"]
-        methods: ["DELETE"]
+        paths: ["/api/room/[^/]+$"]
+        methods: ["DELETE", "OPTIONS"]
+        strip_path: false
+
+      # --- Review APIs ---
+      - name: create-review
+        paths: ["/api/review$", "/api/review"]
+        methods: ["POST", "OPTIONS"]
         strip_path: false
         plugins:
           - name: jwt
             config:
               claims_to_verify: [exp]
 
-      - name: update-room-status
-        paths: ["~/api/room/[^/]+/status$"]
-        methods: ["PUT"]
+      - name: get-reviews-by-room
+        paths: ["~/api/review/[^/]+$"]
+        methods: ["GET", "OPTIONS"]
+        strip_path: false
+
+
+      - name: update-review
+        paths: ["~/api/review/[^/]+$"]
+        methods: ["PUT", "OPTIONS"]
         strip_path: false
         plugins:
           - name: jwt
             config:
               claims_to_verify: [exp]
 
-      - name: get-rooms-by-status
-        paths: ["~/api/room/status/[^/]+$"]
-        methods: ["GET"]
+      - name: delete-review
+        paths: ["~/api/review/[^/]+$"]
+        methods: ["DELETE","OPTIONS"]
         strip_path: false
         plugins:
           - name: jwt
             config:
               claims_to_verify: [exp]
+
+    plugins:
+      - name: cors
+        config:
+          origins: ["*"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+          headers: ["Authorization", "Content-Type", "Accept"]
+          exposed_headers: ["Authorization"]
+          credentials: true
+          max_age: 3600
 
   # --- booking-service ---
   - name: booking-service

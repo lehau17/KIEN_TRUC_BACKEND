@@ -1,6 +1,6 @@
+import { ErrorValidateCode } from '@app/common';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsUrl, MaxLength, MinLength } from 'class-validator';
-import { ErrorValidateCode } from '@app/common';
 
 export class UpdateEmployeeDto {
     @ApiPropertyOptional({
@@ -19,4 +19,10 @@ export class UpdateEmployeeDto {
     @IsUrl({}, { message: ErrorValidateCode.AVATAR_URL_INVALID })
     @IsOptional()
     avatar?: string;
+
+    @IsOptional()
+    email?: string
+
+    @IsOptional()
+    role?: string
 }
