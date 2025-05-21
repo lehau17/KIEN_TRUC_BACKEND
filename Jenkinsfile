@@ -17,6 +17,7 @@ pipeline {
     stage('Build & Push Docker') {
       steps {
         sh '''
+            unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY
           echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin
           docker compose -f $COMPOSE_FILE build
           docker compose -f $COMPOSE_FILE push
