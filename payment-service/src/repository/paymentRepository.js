@@ -41,9 +41,13 @@ const updatePayment = async (paymentId, updateData) => {
   return await Payment.findByIdAndUpdate(paymentId, updateData, { new: true });
 };
 
-const findPaymentsByBookingIdAndStatus = async (bookingId, status) => {
-  return await Payment.find({ bookingId, status }).sort({ createdAt: -1 });
+const findClientSecretByBookingIdAndStatus = async (bookingId, status) => {
+  // Lấy payment mới nhất theo createdAt giảm dần
+  const payment = await Payment.findOne({ bookingId, status }).sort({ createdAt: -1 });
+  // Nếu có payment thì trả về clientSecret, không thì trả về null
+  return payment ? payment.clientSecret : null;
 };
+
 
 module.exports = {
     createPayment,
@@ -52,6 +56,6 @@ module.exports = {
     getPaymentsByUserId,
     findByPaymentIntentId,
     updatePayment,
-    findPaymentsByBookingIdAndStatus
+    findClientSecretByBookingIdAndStatus
 };
     

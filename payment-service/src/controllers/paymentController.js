@@ -105,10 +105,10 @@ const getPaymentIntent = async (req, res) => {
   }
 };
 
-const getPendingPaymentsByBookingId = async (req, res) => {
+const getclientSecretByBookingId = async (req, res) => {
   try {
     const { bookingId } = req.params;
-    const payments = await paymentService.getPendingPaymentsByBookingId(bookingId);
+    const payments = await paymentService.getclientSecretByBookingId(bookingId);
     return res.status(200).json({ success: true, data: payments });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
@@ -125,5 +125,5 @@ module.exports = {
     createPaymentIntent,
     confirmPayment,
     getPaymentIntent,
-    getPendingPaymentsByBookingId
+    getclientSecretByBookingId
 };
