@@ -81,7 +81,7 @@ class RoomService {
             } finally {
                 await moKhoa(lockKey, lockValue); // Giải phóng lock dù có lỗi hay không
             }
-        }, 300); // tính bằng giây
+        }, 5); // tính bằng giây
 
     }
 
@@ -91,7 +91,7 @@ class RoomService {
 
         return await getOrSetCache(cacheKey, async () => {
             // chan nguoi dung cung truy van vao 1 nguon du lieu => chi cho 1 nguoi do
-            // cap khoa cho 1 nguoi duy nhat => cho phep ho doi 2s, 
+            // cap khoa cho 1 nguoi duy nhat => cho phep ho doi 2s,
             // moi 100 mili giay, goi ham lay khoa 1 lan
             const lockValue = await yeuCauKhoa(lockKey, 5000, 2000, 100); // TTL=5s, timeout=2s
             // qua 2 giay => tra ve null
@@ -110,16 +110,16 @@ class RoomService {
             } finally {
                 await moKhoa(lockKey, lockValue);
             }
-        }, 300); // Cache 5 phút
+        }, 5); // Cache 5 phút
     }
 
     static async taoMotPhongMoi(roomData) {
         // kiem tra du lieu
-        if (roomData.name.trim() ==="" || !roomData.price || !roomData.capacity) {
+        if (roomData.name.trim() === "" || !roomData.price || !roomData.capacity) {
             throw new ErrorWithStatus("Thiếu thông tin bắt buộc!", 400);
         }
         // tao phong moi
-        const room = await RoomRepository.taoMotPhongMoi({...roomData, status : "available"});
+        const room = await RoomRepository.taoMotPhongMoi({ ...roomData, status: "available" });
         // Xoá toàn bộ cache danh sách phòng
         const keys = await redis.keys("rooms:list:́́́*");// lay tat ca cac data o redis co key bat dau bang rooms:list
         // xoa du lieu o redis
@@ -130,7 +130,7 @@ class RoomService {
 
     static async capNhatPhong(roomId, updateData) {
         const room = await RoomRepository.capNhatPhong(roomId, updateData);
-        if (!room || room.isActive ===false) throw new ErrorWithStatus("Không tìm thấy phòng để cập nhật!", 400);
+        if (!room || room.isActive === false) throw new ErrorWithStatus("Không tìm thấy phòng để cập nhật!", 400);
 
         // 🔥 Xoá cache liên quan
         await redis.del(`room:detail:${roomId}`);       // Cache chi tiết phòng
@@ -189,7 +189,7 @@ class RoomService {
             } finally {
                 await moKhoa(lockKey, lockValue);
             }
-        }, 300); // Cache 5 phút
+        }, 5); // Cache 5 phút
     }
 
 }
