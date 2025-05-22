@@ -1,6 +1,5 @@
 _format_version: "3.0"
 
-
 plugins:
   - name: rate-limiting
     config:
@@ -142,7 +141,7 @@ services:
               policy: redis
               limit_by: ip
               redis:
-                host: redis        # hoặc IP/hostname của Redis container
+                host: redis # hoặc IP/hostname của Redis container
                 port: 6379
 
       - name: refresh-token
@@ -155,7 +154,7 @@ services:
               policy: redis
               limit_by: ip
               redis:
-                host: redis        # hoặc IP/hostname của Redis container
+                host: redis # hoặc IP/hostname của Redis container
                 port: 6379
 
       - name: verify-account
@@ -168,7 +167,7 @@ services:
               policy: redis
               limit_by: ip
               redis:
-                host: redis        # hoặc IP/hostname của Redis container
+                host: redis # hoặc IP/hostname của Redis container
                 port: 6379
 
       - name: verify-change-password
@@ -189,7 +188,7 @@ services:
               policy: redis
               limit_by: ip
               redis:
-                host: redis        # hoặc IP/hostname của Redis container
+                host: redis # hoặc IP/hostname của Redis container
                 port: 6379
 
       - name: request-change-password
@@ -206,10 +205,8 @@ services:
               policy: redis
               limit_by: ip
               redis:
-                host: redis        # hoặc IP/hostname của Redis container
+                host: redis # hoặc IP/hostname của Redis container
                 port: 6379
-
-
 
       - name: get-employees
         paths: ["/api/employees"]
@@ -265,7 +262,6 @@ services:
             config:
               claims_to_verify: [exp]
 
-
   - name: room-service
     url: http://room-service:5001
     routes:
@@ -309,7 +305,6 @@ services:
         methods: ["GET", "OPTIONS"]
         strip_path: false
 
-
       - name: update-review
         paths: ["~/api/review/[^/]+$"]
         methods: ["PUT", "OPTIONS"]
@@ -321,7 +316,7 @@ services:
 
       - name: delete-review
         paths: ["~/api/review/[^/]+$"]
-        methods: ["DELETE","OPTIONS"]
+        methods: ["DELETE", "OPTIONS"]
         strip_path: false
         plugins:
           - name: jwt
@@ -344,7 +339,7 @@ services:
     routes:
       - name: create-booking
         paths: ["/api/bookings$", "/api/bookings"]
-        methods: ["POST"]
+        methods: ["POST", "OPTIONS"]
         strip_path: false
         plugins:
           - name: jwt
@@ -362,7 +357,7 @@ services:
 
       - name: get-bookings-paged
         paths: ["/api/bookings/paged"]
-        methods: ["GET"]
+        methods: ["GET", "OPTIONS"]
         strip_path: false
         plugins:
           - name: jwt
@@ -371,7 +366,7 @@ services:
 
       - name: confirm-booking
         paths: ["~/api/bookings/[^/]+/confirm$"]
-        methods: ["PUT"]
+        methods: ["PUT", "OPTIONS"]
         strip_path: false
         plugins:
           - name: jwt
@@ -380,7 +375,7 @@ services:
 
       - name: cancel-booking
         paths: ["~/api/bookings/[^/]+/cancel$"]
-        methods: ["PUT"]
+        methods: ["PUT", "OPTIONS"]
         strip_path: false
         plugins:
           - name: jwt
@@ -389,7 +384,7 @@ services:
 
       - name: checkin-booking
         paths: ["~/api/bookings/[^/]+/checkin$"]
-        methods: ["PUT"]
+        methods: ["PUT", "OPTIONS"]
         strip_path: false
         plugins:
           - name: jwt
@@ -398,7 +393,7 @@ services:
 
       - name: checkout-booking
         paths: ["~/api/bookings/[^/]+/checkout$"]
-        methods: ["PUT"]
+        methods: ["PUT", "OPTIONS"]
         strip_path: false
         plugins:
           - name: rate-limiting
@@ -412,7 +407,7 @@ services:
 
       - name: get-bookings-by-date
         paths: ["/api/bookings/by-date"]
-        methods: ["GET"]
+        methods: ["GET", "OPTIONS"]
         strip_path: false
         plugins:
           - name: rate-limiting
@@ -426,7 +421,7 @@ services:
 
       - name: check-room-availability
         paths: ["/api/bookings/check-availability"]
-        methods: ["GET"]
+        methods: ["GET", "OPTIONS"]
         strip_path: false
         plugins:
           - name: jwt
