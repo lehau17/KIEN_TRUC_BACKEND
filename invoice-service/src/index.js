@@ -20,8 +20,15 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// ✅ Đáp ứng mọi preflight request OPTIONS
-app.options('*', cors());
+
+// Nếu dùng app.options('*', cors()), sửa tương tự:
+app.options('*', cors({
+    origin: ['http://localhost:3000', 'http://127.0.0.1:5500'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+}));
+
 
 // ✅ Nếu dùng middleware khác, bỏ qua OPTIONS request
 app.use((req, res, next) => {

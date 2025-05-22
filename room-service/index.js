@@ -12,16 +12,20 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 
-const corsOptions = {
-    origin: '*',
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Authorization", "Content-Type", "Accept"],
-    exposedHeaders: ["Authorization"],
-    credentials: true
-};
+app.use(cors({
+    origin: ['http://localhost:3000', 'http://127.0.0.1:5500'], // ✅ Cho phép cả hai
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+}));
 
-app.use(cors(corsOptions));
-// rate limiter
+// Nếu dùng app.options('*', cors()), sửa tương tự:
+app.options('*', cors({
+    origin: ['http://localhost:3000', 'http://127.0.0.1:5500'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+}));
 app.use(limiter)
 // time limiter
 app.use(timeout('5s', { respond: true }));

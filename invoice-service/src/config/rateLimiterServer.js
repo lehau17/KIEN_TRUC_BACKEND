@@ -1,7 +1,7 @@
 const redisClient = require('../config/redisClient');  // Sử dụng redisClient đã cấu hình
 const RATE_LIMIT_KEY = 'server:rate-limit';  // Key dùng để lưu trữ số lượng yêu cầu
 
-const MAX_REQUESTS = 1; // Giới hạn tối đa 100 yêu cầu
+const MAX_REQUESTS = 10; // Giới hạn tối đa 100 yêu cầu
 const WINDOW_SIZE = 60 * 1000; // Cửa sổ thời gian 1 phút (60s)
 
 const rateLimiterServer = async (req, res, next) => {
