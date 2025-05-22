@@ -80,5 +80,6 @@ app.use((err, req, res, next) => {
 
 app.listen(5001, async () => {
     await ketNoiDatabase()
+    require('./src/cron/updateRoomRatings')
     console.log("App is listening on port ${3000}")
 })
