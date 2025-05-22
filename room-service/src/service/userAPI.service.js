@@ -1,7 +1,18 @@
 const axios = require('axios');
+const axiosRetry = require('axios-retry');
 const createBreaker = require('../utils/cricle_breaker.util');
 
 const userServiceUrl = process.env.USER_SERVICE_URL || 'http://user-service:5000';
+
+// Thiết lập retry cho axios (3 lần, delay tăng dần)
+axiosRetry(axios, {
+    retries: 3,
+    retryDelay: (retryCount) => retryCount * 500, // 500ms, 1000ms, 1500ms
+    retryCondition: (error) => {
+        // Retry khi timeout, network error, hoặc status >= 500
+        return axiosRetry.isNetworkOrIdempotentRequestError(error) || error.response?.status >= 500;
+    },
+});
 
 // Hàm gọi tới user-service
 async function getUserById(userId) {
@@ -11,9 +22,9 @@ async function getUserById(userId) {
 
 // Circuit breaker
 const userBreaker = createBreaker(getUserById, {
-    timeout: 3000,
+    timeout: 3000, // ms
     errorThresholdPercentage: 50,
-    resetTimeout: 10000,
+    resetTimeout: 10000, // ms
 });
 
 // Hàm wrapper: gọi breaker và fallback nếu lỗi
