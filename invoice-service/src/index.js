@@ -10,16 +10,21 @@ const app = express();
 // ✅ Middleware JSON để parse body
 app.use(express.json());
 
-// ✅ Cấu hình CORS đầy đủ
 app.use(cors({
-    origin: 'http://localhost:3000', // hoặc dùng process.env.FRONTEND_URL
+    origin: ['http://localhost:3000', 'http://127.0.0.1:5500'], // ✅ Cho phép cả hai
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true, // nếu dùng token, cookie
+    credentials: true,
 }));
 
-// ✅ Đáp ứng mọi preflight request OPTIONS
-app.options('*', cors());
+// Nếu dùng app.options('*', cors()), sửa tương tự:
+app.options('*', cors({
+    origin: ['http://localhost:3000', 'http://127.0.0.1:5500'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+}));
+
 
 // ✅ Nếu dùng middleware khác, bỏ qua OPTIONS request
 app.use((req, res, next) => {
