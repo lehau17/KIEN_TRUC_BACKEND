@@ -1,4 +1,5 @@
 // src/redis.js
+// kết nối redis
 const Redis = require('ioredis');
 const { v4: uuidv4 } = require("uuid");
 const redis = new Redis({
@@ -14,6 +15,8 @@ redis.on('error', (err) => console.error('Redis error:', err));
 
 
 // key : value
+// Ngươi co khóa mới sử dụng được, khóa<key> tồn tại 1 lần trong thời gian đó,tạo 1 khóa<key> duy nhất 
+
 async function khoa(key, ttl = 5000) {
     // sinh ra giá trị ngẫu nhiên để set vào redis
     const lockValue = uuidv4();
@@ -29,7 +32,7 @@ async function khoa(key, ttl = 5000) {
 
 
 
-
+//Người dung khóa gọi hàm này kiểm tra key đã tồn tại chưa.Nếu chưa sẽ 1 tạo ra khóa mới để khóa.Nếu khóa đó tồn tại thì sẽ chờ theo thời gian retryDelay 
 async function yeuCauKhoa(key, ttl = 5000, timeout = 2000, retryDelay = 100) {
     const start = Date.now();
     let lockValue;
@@ -56,7 +59,7 @@ async function yeuCauKhoa(key, ttl = 5000, timeout = 2000, retryDelay = 100) {
 //   }
 
 
-
+//Nếu khóa tồn tại rồi thì xóa 
 // đảm bảo tính nguyên tử (automic)
 async function moKhoa(key, lockValue) {
     const luaScript = `
