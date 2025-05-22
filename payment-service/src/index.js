@@ -2,12 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const { mainRouter } = require("./routes");
 const { connectDB } = require('./config/db');
-const { listenToBookingEvents } = require('./services/eventListener');
+const { listenToBookingEvents, } = require('./services/eventListener');
 const paymentController = require('./controllers/paymentController');
 const cors = require('cors');
 const app = express();
 
 
+app.set('trust proxy', 1);
 app.use(cors({
     origin: '*',
 }));

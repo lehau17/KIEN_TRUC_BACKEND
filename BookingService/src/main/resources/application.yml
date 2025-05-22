@@ -7,29 +7,29 @@ spring:
     port: 8080
   data:
     mongodb:
-      host: localhost
+      host: mongo
       port: 27017
       database: Hotels
     redis:
-      host: localhost
+      host: redis
       port: 6379
       database: 0
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-#  rabbitmq:
-#    host: localhost
-#    port: 5672
-#    username: guest
-#    password: guest
-#    virtual-host: /
-#  amqp:
-#    deserialization:
-#      trust:
-#        all: true
-  
-# rabbitmq server:
+  #  rabbitmq:
+  #    host: localhost
+  #    port: 5672
+  #    username: guest
+  #    password: guest
+  #    virtual-host: /
+  #  amqp:
+  #    deserialization:
+  #      trust:
+  #        all: true
+
+  # rabbitmq server:
   rabbitmq:
-    host: 44.203.85.39
+    host: rabbitmq
     port: 5673
     username: admin
     password: 1234
@@ -39,7 +39,7 @@ spring:
         trust:
           all: true
 room-service:
-  url: http://localhost:5001/api/room
+  url: http://room-service:5001/api/room
 
 # Cấu hình Resilience4J Rate Limiter
 resilience4j:
